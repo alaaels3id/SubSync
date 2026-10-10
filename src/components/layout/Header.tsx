@@ -1,6 +1,4 @@
-import React from 'react';
 import {
-  Film,
   FolderOpen,
   FileText,
   Download,
@@ -14,6 +12,7 @@ import {
   CheckCircle2,
   AlertCircle
 } from 'lucide-react';
+import { Logo } from '@/components/common/Logo';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useSubtitlesStore } from '@/stores/useSubtitlesStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
@@ -45,10 +44,10 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="h-14 bg-white dark:bg-brand-indigo text-slate-800 dark:text-slate-100 flex items-center justify-between px-4 border-b border-slate-200 dark:border-brand-indigo-700/60 shadow-sm select-none shrink-0 z-30 transition-colors">
       {/* Brand & Project Info */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 px-2.5 py-1 bg-brand-indigo text-white dark:bg-brand-teal/20 dark:border dark:border-brand-teal/40 rounded-lg shadow-sm">
-          <Film className="w-5 h-5 text-brand-apricot" />
-          <span className="font-bold text-base tracking-wide">
-            SubSync <span className="text-brand-apricot font-normal text-xs uppercase tracking-wider">Studio</span>
+        <div className="flex items-center gap-2 px-2 py-1 bg-brand-indigo/10 dark:bg-brand-teal/20 border border-brand-teal/30 rounded-lg shadow-sm">
+          <Logo size={22} />
+          <span className="font-bold text-base tracking-wide text-brand-indigo-900 dark:text-white">
+            SubSync <span className="text-brand-teal dark:text-brand-apricot font-normal text-xs uppercase tracking-wider">Studio</span>
           </span>
         </div>
 

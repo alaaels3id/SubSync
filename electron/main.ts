@@ -38,6 +38,7 @@ function createWindow() {
 
   mainWindow = new BrowserWindow({
     title: 'SubSync Studio',
+    icon: path.join(process.env.VITE_PUBLIC || path.join(__dirname, '../public'), 'logo.svg'),
     width: 1280,
     height: 820,
     minWidth: 1024,

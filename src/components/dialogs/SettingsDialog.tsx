@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useSettingsStore, AppTheme, AppLanguage } from '@/stores/useSettingsStore';
 import { useNotificationStore } from '@/stores/useNotificationStore';
+import { Logo } from '@/components/common/Logo';
 
 interface SettingsDialogProps {
   isOpen: boolean;
@@ -305,16 +306,19 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
             {/* About & Updates Tab (UPD-01 & UPD-02) */}
             {activeTab === 'about' && (
               <div className="space-y-4">
-                <div className="p-4 rounded-xl bg-slate-950/40 border border-brand-indigo-800">
-                  <h5 className="font-bold text-sm text-brand-apricot mb-1">SubSync Studio</h5>
-                  <p className="text-slate-400 mb-2">
-                    {language === 'ar'
-                      ? 'الإصدار المعتمد: 1.0.0-MVP (نطاق معتمد)'
-                      : 'Version: 1.0.0-MVP (Approved Scope)'}
-                  </p>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
-                    تطبيق سطح مكتب لمزامنة وترجمة الفيديو بتقنيات Electron + React + TypeScript بدقة 1ms.
-                  </p>
+                <div className="p-4 rounded-xl bg-slate-950/40 border border-brand-indigo-800 flex items-start gap-4">
+                  <Logo size={48} />
+                  <div className="flex-1">
+                    <h5 className="font-bold text-sm text-brand-apricot mb-1">SubSync Studio</h5>
+                    <p className="text-slate-400 mb-2">
+                      {language === 'ar'
+                        ? 'الإصدار المعتمد: 1.0.0-MVP (نطاق معتمد)'
+                        : 'Version: 1.0.0-MVP (Approved Scope)'}
+                    </p>
+                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                      تطبيق سطح مكتب لمزامنة وترجمة الفيديو بتقنيات Electron + React + TypeScript بدقة 1ms.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="pt-1">
