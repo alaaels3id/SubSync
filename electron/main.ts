@@ -36,9 +36,12 @@ function createWindow() {
     ? path.join(__dirname, 'preload.mjs')
     : path.join(__dirname, 'preload.js');
 
+  const publicDir = process.env.VITE_PUBLIC || path.join(__dirname, '../public');
+  const iconPath = path.join(publicDir, process.platform === 'win32' ? 'icon.ico' : 'icon.png');
+
   mainWindow = new BrowserWindow({
     title: 'SubSync Studio',
-    icon: path.join(process.env.VITE_PUBLIC || path.join(__dirname, '../public'), 'logo.svg'),
+    icon: fsSync.existsSync(iconPath) ? iconPath : undefined,
     width: 1280,
     height: 820,
     minWidth: 1024,
@@ -165,6 +168,15 @@ app.whenReady().then(() => {
   ipcMain.handle('app:getVersion', () => {
     return app.getVersion();
   });
+
+  // Set macOS dock icon
+  if (process.platform === 'darwin' && app.dock) {
+    const publicDir = process.env.VITE_PUBLIC || path.join(__dirname, '../public');
+    const dockIconPath = path.join(publicDir, 'icon.png');
+    if (fsSync.existsSync(dockIconPath)) {
+      app.dock.setIcon(dockIconPath);
+    }
+  }
 
   createWindow();
 
