@@ -1,5 +1,4 @@
 import { app, BrowserWindow, ipcMain, dialog, protocol, net, nativeImage, Notification } from 'electron';
-import notifier from 'node-notifier';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import fsSync from 'node:fs';
@@ -69,44 +68,25 @@ function createWindow() {
 }
 
 /**
- * Display native desktop notification using both Electron Notification API
- * and node-notifier fallback (ensuring custom icon displays on macOS in dev & prod).
+ * Display native desktop notification using Electron's Notification API
+ * with the custom app icon and sound.
  */
 export function showNativeNotification(title: string, message: string, sound = true) {
   const publicDir = process.env.VITE_PUBLIC || path.join(__dirname, '../public');
   const iconPath = path.resolve(publicDir, 'icon.png');
+  const icon = fsSync.existsSync(iconPath) ? nativeImage.createFromPath(iconPath) : undefined;
 
   if (Notification.isSupported()) {
     try {
       const notification = new Notification({
         title,
         body: message,
-        icon: fsSync.existsSync(iconPath) ? iconPath : undefined,
+        icon,
         silent: !sound,
       });
       notification.show();
     } catch (e) {
-      console.warn('Native notification failed:', e);
-    }
-  }
-
-  if (process.platform === 'darwin') {
-    try {
-      notifier.notify(
-        {
-          title,
-          message,
-          icon: iconPath,
-          contentImage: iconPath,
-          sound,
-          wait: false,
-        },
-        (err) => {
-          if (err) console.warn('Notifier error:', err);
-        }
-      );
-    } catch (err) {
-      console.warn('node-notifier failed:', err);
+      console.warn('Native notification error:', e);
     }
   }
 }
