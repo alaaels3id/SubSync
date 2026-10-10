@@ -85,10 +85,8 @@ if ! gh release view "v$TARGET_VERSION" >/dev/null 2>&1; then
 fi
 
 echo "Uploading release assets for v$TARGET_VERSION..."
-RELEASE_FILES=$(find release -maxdepth 1 -type f \( -name "*.dmg" -o -name "*.zip" -o -name "*.blockmap" -o -name "*.yml" \))
-
-for file in $RELEASE_FILES; do
-  echo "Uploading $file..."
+find release -maxdepth 1 -type f \( -name "*.dmg" -o -name "*.zip" -o -name "*.blockmap" -o -name "*.yml" \) -print0 | while IFS= read -r -d '' file; do
+  echo "Uploading \"$file\"..."
   gh release upload "v$TARGET_VERSION" "$file" --clobber || true
 done
 
