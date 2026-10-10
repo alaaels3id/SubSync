@@ -1,0 +1,71 @@
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "com.subsync.studio",
+  "productName": "SubSync Studio",
+  "copyright": "Copyright © 2026 SubSync Studio Team",
+  "directories": {
+    "output": "release",
+    "buildResources": "build"
+  },
+  "files": [
+    "dist/**/*",
+    "dist-electron/**/*",
+    "package.json"
+  ],
+  "electronLanguages": ["ar", "en"],
+  "mac": {
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["arm64", "x64"]
+      },
+      {
+        "target": "zip",
+        "arch": ["arm64", "x64"]
+      }
+    ],
+    "icon": "build/icon.icns",
+    "category": "public.app-category.video",
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false
+  },
+  "dmg": {
+    "contents": [
+      {
+        "x": 130,
+        "y": 220
+      },
+      {
+        "x": 410,
+        "y": 220,
+        "type": "link",
+        "path": "/Applications"
+      }
+    ]
+  },
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      },
+      {
+        "target": "portable",
+        "arch": ["x64"]
+      }
+    ],
+    "icon": "build/icon.ico"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": "always",
+    "createStartMenuShortcut": true,
+    "shortcutName": "SubSync Studio"
+  },
+  "linux": {
+    "target": ["AppImage", "deb"],
+    "icon": "build/icon.png",
+    "category": "AudioVideo"
+  }
+}
