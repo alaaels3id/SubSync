@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import {
   Play,
   Pause,
@@ -13,6 +13,7 @@ import {
   Link as LinkIcon,
   Upload
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { usePlayerStore } from '@/stores/usePlayerStore';
 import { useSubtitlesStore } from '@/stores/useSubtitlesStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
@@ -23,6 +24,7 @@ interface VideoPlayerProps {
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => {
+  const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -47,7 +49,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
   } = usePlayerStore();
 
   const { tracks, activeTrackId } = useSubtitlesStore();
-  const { subtitlePreferences, language } = useSettingsStore();
+  const { subtitlePreferences } = useSettingsStore();
 
   const [showUrlDialog, setShowUrlDialog] = useState(false);
   const [urlInput, setUrlInput] = useState('');
@@ -57,7 +59,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
   useEffect(() => {
     if (!videoRef.current) return;
     if (isPlaying && videoRef.current.paused) {
-      videoRef.current.play().catch((err) => {
+      videoRef.current.play().catch((err: unknown) => {
         console.warn('Playback error:', err);
         setIsPlaying(false);
       });
@@ -186,12 +188,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
               <Video className="w-8 h-8" />
             </div>
             <p className="text-base font-semibold text-slate-200 mb-1">
-              {language === 'ar' ? 'لم يتم تحميل أي فيديو' : 'No Video Loaded'}
+              {t('player.noVideoTitle')}
             </p>
             <p className="text-xs text-slate-400 max-w-sm mb-4">
-              {language === 'ar'
-                ? 'اسحب وأفلت ملف فيديو هنا، أو اختر ملفاً من جهازك أو استخدم رابطاً مباشراً.'
-                : 'Drag and drop a video file here, or select from your computer or stream URL.'}
+              {t('player.noVideoDesc')}
             </p>
             <div className="flex items-center gap-3">
               <button
@@ -199,14 +199,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
                 className="flex items-center gap-2 px-4 py-2 bg-brand-teal hover:bg-brand-teal-600 text-white text-xs font-medium rounded-lg shadow-sm transition"
               >
                 <Upload className="w-3.5 h-3.5" />
-                <span>{language === 'ar' ? 'اختيار ملف محلي' : 'Choose Local File'}</span>
+                <span>{t('player.chooseLocal')}</span>
               </button>
               <button
                 onClick={() => setShowUrlDialog(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 transition"
               >
                 <LinkIcon className="w-3.5 h-3.5" />
-                <span>{language === 'ar' ? 'رابط وسائط مباشر' : 'Direct Media URL'}</span>
+                <span>{t('player.directUrl')}</span>
               </button>
             </div>
           </div>
@@ -257,19 +257,17 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
           >
             <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
               <LinkIcon className="w-4 h-4 text-brand-apricot" />
-              <span>{language === 'ar' ? 'تشغيل من رابط وسائط مباشر' : 'Play from Direct Media URL'}</span>
+              <span>{t('player.directUrlTitle')}</span>
             </h4>
             <p className="text-xs text-slate-400 mb-4">
-              {language === 'ar'
-                ? 'أدخل رابطاً مباشراً لملف فيديو (MP4, WebM, HLS). لا تدعم صفحات YouTube أو مواقع البث المحمية.'
-                : 'Enter a direct playable media link (MP4, WebM). Webpages & DRM streams are not supported.'}
+              {t('player.directUrlDesc')}
             </p>
             <input
               type="url"
               required
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
-              placeholder="https://example.com/video.mp4"
+              placeholder={t('player.directUrlPlaceholder')}
               className="w-full bg-slate-950 border border-brand-indigo-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-teal mb-4"
             />
             <div className="flex justify-end gap-2">
@@ -278,13 +276,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
                 onClick={() => setShowUrlDialog(false)}
                 className="px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-slate-800 transition"
               >
-                {language === 'ar' ? 'إلغاء' : 'Cancel'}
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 className="px-4 py-1.5 rounded-lg text-xs bg-brand-teal hover:bg-brand-teal-600 text-white font-medium transition"
               >
-                {language === 'ar' ? 'تشغيل' : 'Load Video'}
+                {t('player.loadVideo')}
               </button>
             </div>
           </form>
@@ -298,7 +296,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
           <button
             onClick={togglePlay}
             disabled={!videoSource}
-            title={isPlaying ? (language === 'ar' ? 'إيقاف مؤقت (Space)' : 'Pause (Space)') : (language === 'ar' ? 'تشغيل (Space)' : 'Play (Space)')}
+            title={isPlaying ? t('player.pause') : t('player.play')}
             className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 transition"
           >
             {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
@@ -308,7 +306,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
           <button
             onClick={() => seekRelative(-5000)}
             disabled={!videoSource}
-            title={language === 'ar' ? 'تأخير 5 ثوانٍ (←)' : 'Seek -5s (←)'}
+            title={t('player.seekBack')}
             className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 transition"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -317,7 +315,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
           <button
             onClick={() => seekRelative(5000)}
             disabled={!videoSource}
-            title={language === 'ar' ? 'تقديم 5 ثوانٍ (→)' : 'Seek +5s (→)'}
+            title={t('player.seekForward')}
             className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 transition"
           >
             <RotateCw className="w-3.5 h-3.5" />
@@ -329,7 +327,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
           <button
             onClick={() => stepFrames(-1)}
             disabled={!videoSource}
-            title={language === 'ar' ? 'إطار للخلف (Frame Step Backward)' : 'Frame -1'}
+            title={t('player.frameStepBackward')}
             className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 transition text-xs flex items-center"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
@@ -338,7 +336,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
           <button
             onClick={() => stepFrames(1)}
             disabled={!videoSource}
-            title={language === 'ar' ? 'إطار للأمام (Frame Step Forward)' : 'Frame +1'}
+            title={t('player.frameStepForward')}
             className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 transition text-xs flex items-center"
           >
             <ChevronRight className="w-3.5 h-3.5" />
@@ -359,7 +357,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
             value={playbackRate}
             onChange={(e) => setPlaybackRate(parseFloat(e.target.value))}
             className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-700 dark:text-slate-300 rounded px-1.5 py-0.5 focus:outline-none focus:border-brand-teal shadow-sm"
-            title={language === 'ar' ? 'سرعة التشغيل' : 'Playback Speed'}
+            title={t('player.speed')}
           >
             <option value="0.5">0.5x</option>
             <option value="0.75">0.75x</option>
@@ -374,7 +372,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
             <button
               onClick={toggleMute}
               className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
-              title={isMuted ? 'Unmute' : 'Mute'}
+              title={isMuted ? t('player.unmute') : t('player.mute')}
             >
               {isMuted || volume === 0 ? <VolumeX className="w-3.5 h-3.5 text-rose-500" /> : <Volume2 className="w-3.5 h-3.5" />}
             </button>
@@ -393,7 +391,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
           <button
             onClick={toggleFullscreen}
             className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
-            title={language === 'ar' ? 'ملء الشاشة' : 'Fullscreen'}
+            title={t('player.fullscreen')}
           >
             <Maximize2 className="w-3.5 h-3.5" />
           </button>

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import i18n from '@/i18n';
 
 export type NotificationType = 'success' | 'info' | 'warning' | 'error' | 'test';
 
@@ -30,8 +31,8 @@ export const useNotificationStore = create<NotificationState>((set) => ({
     {
       id: 'notif-welcome',
       type: 'info',
-      title: 'مرحبًا بك في SubSync Studio',
-      message: 'تم تجهيز مساحة العمل بنجاح. يمكنك استيراد فيديو أو البدء بمشروع جديد.',
+      title: i18n.t('notifications.welcomeTitle'),
+      message: i18n.t('notifications.welcomeMessage'),
       timestamp: Date.now(),
       read: false,
     },

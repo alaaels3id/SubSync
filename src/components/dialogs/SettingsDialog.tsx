@@ -11,6 +11,7 @@ import {
   RefreshCw,
   CheckCircle
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useSettingsStore, AppTheme, AppLanguage } from '@/stores/useSettingsStore';
 import { useNotificationStore } from '@/stores/useNotificationStore';
 import { Logo } from '@/components/common/Logo';
@@ -23,6 +24,7 @@ interface SettingsDialogProps {
 type SettingsTab = 'appearance' | 'language' | 'subtitles' | 'storage' | 'notifications' | 'about';
 
 export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
   const {
     theme,
     setTheme,
@@ -45,10 +47,8 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
   const handleSendTestNotification = () => {
     addNotification(
       'test',
-      language === 'ar' ? 'إشعار تجريبي (Test Notification)' : 'Test Notification',
-      language === 'ar'
-        ? 'تم إرسال هذا الإشعار بنجاح لاختبار نظام الإشعارات الداخلي والـ Toasts.'
-        : 'This notification was triggered to verify internal notifications & toasts.'
+      t('settings.testSentTitle'),
+      t('settings.testSentDesc')
     );
   };
 
@@ -57,26 +57,22 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
     setUpdateStatus(null);
     setTimeout(() => {
       setCheckingUpdates(false);
-      setUpdateStatus(
-        language === 'ar'
-          ? 'أنت تستخدم أحدث إصدار معتمد (v1.0.0-mvp).'
-          : 'You are using the latest version (v1.0.0-mvp).'
-      );
+      setUpdateStatus(t('settings.latestVersion'));
     }, 1200);
   };
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl bg-brand-indigo-900 border border-brand-indigo-700 rounded-2xl shadow-2xl text-slate-100 flex flex-col h-[560px] overflow-hidden">
+      <div className="w-full max-w-2xl bg-white dark:bg-brand-indigo-900 border border-slate-200 dark:border-brand-indigo-700 rounded-2xl shadow-2xl text-slate-800 dark:text-slate-100 flex flex-col h-[560px] overflow-hidden transition-colors">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-brand-indigo-700/80 flex items-center justify-between">
+        <div className="px-5 py-4 border-b border-slate-200 dark:border-brand-indigo-700/80 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Settings className="w-5 h-5 text-brand-teal-300" />
+            <Settings className="w-5 h-5 text-brand-teal" />
             <h3 className="text-base font-semibold">
-              {language === 'ar' ? 'إعدادات التطبيق (Settings)' : 'Application Settings'}
+              {t('settings.title')}
             </h3>
           </div>
-          <button onClick={onClose} className="p-1 text-slate-400 hover:text-white transition">
+          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white transition">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -84,17 +80,17 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
         {/* Body with Sidebar Tabs */}
         <div className="flex flex-1 overflow-hidden">
           {/* Sidebar */}
-          <div className="w-48 bg-slate-950/40 border-l border-brand-indigo-700/60 p-2 space-y-1 text-xs">
+          <div className="w-48 bg-slate-50 dark:bg-slate-950/40 border-l border-slate-200 dark:border-brand-indigo-700/60 p-2 space-y-1 text-xs">
             <button
               onClick={() => setActiveTab('appearance')}
               className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-right font-medium transition ${
                 activeTab === 'appearance'
                   ? 'bg-brand-teal text-white'
-                  : 'text-slate-300 hover:bg-brand-indigo-800'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-brand-indigo-800'
               }`}
             >
               <Palette className="w-3.5 h-3.5" />
-              <span>{language === 'ar' ? 'المظهر (Appearance)' : 'Appearance'}</span>
+              <span>{t('settings.appearance')}</span>
             </button>
 
             <button
@@ -102,11 +98,11 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
               className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-right font-medium transition ${
                 activeTab === 'language'
                   ? 'bg-brand-teal text-white'
-                  : 'text-slate-300 hover:bg-brand-indigo-800'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-brand-indigo-800'
               }`}
             >
               <Globe className="w-3.5 h-3.5" />
-              <span>{language === 'ar' ? 'اللغة (Language)' : 'Language'}</span>
+              <span>{t('settings.language')}</span>
             </button>
 
             <button
@@ -114,11 +110,11 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
               className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-right font-medium transition ${
                 activeTab === 'subtitles'
                   ? 'bg-brand-teal text-white'
-                  : 'text-slate-300 hover:bg-brand-indigo-800'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-brand-indigo-800'
               }`}
             >
               <Sliders className="w-3.5 h-3.5" />
-              <span>{language === 'ar' ? 'عرض الترجمة' : 'Subtitle Display'}</span>
+              <span>{t('settings.subtitles')}</span>
             </button>
 
             <button
@@ -126,11 +122,11 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
               className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-right font-medium transition ${
                 activeTab === 'notifications'
                   ? 'bg-brand-teal text-white'
-                  : 'text-slate-300 hover:bg-brand-indigo-800'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-brand-indigo-800'
               }`}
             >
               <Bell className="w-3.5 h-3.5" />
-              <span>{language === 'ar' ? 'الإشعارات' : 'Notifications'}</span>
+              <span>{t('settings.notifications')}</span>
             </button>
 
             <button
@@ -138,11 +134,11 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
               className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-right font-medium transition ${
                 activeTab === 'about'
                   ? 'bg-brand-teal text-white'
-                  : 'text-slate-300 hover:bg-brand-indigo-800'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-brand-indigo-800'
               }`}
             >
               <Info className="w-3.5 h-3.5" />
-              <span>{language === 'ar' ? 'عن التطبيق والتحديثات' : 'About & Updates'}</span>
+              <span>{t('settings.about')}</span>
             </button>
           </div>
 
@@ -151,25 +147,25 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
             {/* Appearance Tab */}
             {activeTab === 'appearance' && (
               <div className="space-y-4">
-                <h4 className="text-sm font-semibold text-slate-200">
-                  {language === 'ar' ? 'نمط المظهر (Theme)' : 'Theme Preference'}
+                <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                  {t('settings.themePreference')}
                 </h4>
                 <div className="grid grid-cols-3 gap-3">
                   {[
-                    { id: 'dark', label: language === 'ar' ? 'داكن (Dark)' : 'Dark' },
-                    { id: 'light', label: language === 'ar' ? 'فاتح (Light)' : 'Light' },
-                    { id: 'system', label: language === 'ar' ? 'النظام (System)' : 'System' },
-                  ].map((t) => (
+                    { id: 'dark', label: t('common.dark') },
+                    { id: 'light', label: t('common.light') },
+                    { id: 'system', label: t('common.system') },
+                  ].map((item) => (
                     <button
-                      key={t.id}
-                      onClick={() => setTheme(t.id as AppTheme)}
+                      key={item.id}
+                      onClick={() => setTheme(item.id as AppTheme)}
                       className={`p-3 rounded-xl border text-center font-medium transition ${
-                        theme === t.id
-                          ? 'border-brand-apricot bg-brand-teal/20 text-brand-apricot shadow-sm'
-                          : 'border-brand-indigo-700 bg-slate-950/40 text-slate-300 hover:bg-slate-900'
+                        theme === item.id
+                          ? 'border-brand-teal bg-brand-teal/10 dark:bg-brand-teal/20 text-brand-teal dark:text-brand-apricot shadow-sm'
+                          : 'border-slate-300 dark:border-brand-indigo-700 bg-slate-50 dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900'
                       }`}
                     >
-                      {t.label}
+                      {item.label}
                     </button>
                   ))}
                 </div>
@@ -179,8 +175,8 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
             {/* Language Tab */}
             {activeTab === 'language' && (
               <div className="space-y-4">
-                <h4 className="text-sm font-semibold text-slate-200">
-                  {language === 'ar' ? 'لغة الواجهة (Interface Language)' : 'Interface Language'}
+                <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                  {t('settings.interfaceLanguage')}
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   {[
@@ -192,8 +188,8 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
                       onClick={() => setLanguage(lang.id as AppLanguage)}
                       className={`p-3 rounded-xl border text-center font-medium transition ${
                         language === lang.id
-                          ? 'border-brand-apricot bg-brand-teal/20 text-brand-apricot shadow-sm'
-                          : 'border-brand-indigo-700 bg-slate-950/40 text-slate-300 hover:bg-slate-900'
+                          ? 'border-brand-teal bg-brand-teal/10 dark:bg-brand-teal/20 text-brand-teal dark:text-brand-apricot shadow-sm'
+                          : 'border-slate-300 dark:border-brand-indigo-700 bg-slate-50 dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900'
                       }`}
                     >
                       {lang.label}
@@ -206,14 +202,14 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
             {/* Subtitle Preferences Tab */}
             {activeTab === 'subtitles' && (
               <div className="space-y-4">
-                <h4 className="text-sm font-semibold text-slate-200">
-                  {language === 'ar' ? 'تخصيص مظهر الترجمة بالمشغل' : 'Subtitle Styling in Player'}
+                <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                  {t('settings.subtitlesInPlayer')}
                 </h4>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-slate-400 mb-1">
-                      {language === 'ar' ? 'حجم الخط (Font Size)' : 'Font Size'} ({subtitlePreferences.fontSize}px)
+                    <label className="block text-slate-600 dark:text-slate-400 mb-1">
+                      {t('settings.fontSize')} ({subtitlePreferences.fontSize}px)
                     </label>
                     <input
                       type="range"
@@ -226,8 +222,8 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
                   </div>
 
                   <div>
-                    <label className="block text-slate-400 mb-1">
-                      {language === 'ar' ? 'شفافية الخلفية' : 'Background Opacity'} (
+                    <label className="block text-slate-600 dark:text-slate-400 mb-1">
+                      {t('settings.backgroundOpacity')} (
                       {(subtitlePreferences.backgroundOpacity * 100).toFixed(0)}%)
                     </label>
                     <input
@@ -256,9 +252,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
                     }}
                     className="px-4 py-2 rounded-lg text-center"
                   >
-                    {language === 'ar'
-                      ? 'هذه معاينة لمظهر الترجمة داخل مشغل الفيديو'
-                      : 'This is a preview of the subtitle style in player'}
+                    {t('settings.previewText')}
                   </div>
                 </div>
               </div>
@@ -267,19 +261,17 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
             {/* Notifications Tab (SET-05 & NOT-05) */}
             {activeTab === 'notifications' && (
               <div className="space-y-4">
-                <h4 className="text-sm font-semibold text-slate-200">
-                  {language === 'ar' ? 'إعدادات الإشعارات الداخلية' : 'In-App Notification Settings'}
+                <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                  {t('settings.inAppSettings')}
                 </h4>
 
-                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/40 border border-brand-indigo-800">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-brand-indigo-800">
                   <div>
-                    <p className="font-medium text-slate-200">
-                      {language === 'ar' ? 'تفعيل الإشعارات الداخلية' : 'Enable Internal Notifications'}
+                    <p className="font-medium text-slate-800 dark:text-slate-200">
+                      {t('settings.enableNotifications')}
                     </p>
-                    <p className="text-[11px] text-slate-400">
-                      {language === 'ar'
-                        ? 'إظهار التنبيهات المنبثقة (Toasts) وسجل مركز الإشعارات.'
-                        : 'Display toasts and history in notification center.'}
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      {t('settings.enableNotificationsDesc')}
                     </p>
                   </div>
                   <input
@@ -297,7 +289,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
                     className="flex items-center gap-2 px-4 py-2 bg-brand-teal hover:bg-brand-teal-600 text-white rounded-lg font-medium shadow-sm transition"
                   >
                     <Send className="w-3.5 h-3.5" />
-                    <span>{language === 'ar' ? 'إرسال إشعار تجريبي (Send Test)' : 'Send Test Notification'}</span>
+                    <span>{t('settings.sendTest')}</span>
                   </button>
                 </div>
               </div>
@@ -306,17 +298,15 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
             {/* About & Updates Tab (UPD-01 & UPD-02) */}
             {activeTab === 'about' && (
               <div className="space-y-4">
-                <div className="p-4 rounded-xl bg-slate-950/40 border border-brand-indigo-800 flex items-start gap-4">
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-brand-indigo-800 flex items-start gap-4">
                   <Logo size={48} />
                   <div className="flex-1">
-                    <h5 className="font-bold text-sm text-brand-apricot mb-1">SubSync Studio</h5>
-                    <p className="text-slate-400 mb-2">
-                      {language === 'ar'
-                        ? 'الإصدار المعتمد: 1.0.0-MVP (نطاق معتمد)'
-                        : 'Version: 1.0.0-MVP (Approved Scope)'}
+                    <h5 className="font-bold text-sm text-brand-teal dark:text-brand-apricot mb-1">SubSync Studio</h5>
+                    <p className="text-slate-600 dark:text-slate-400 mb-2">
+                      {t('settings.version')}
                     </p>
-                    <p className="text-[11px] text-slate-400 leading-relaxed">
-                      تطبيق سطح مكتب لمزامنة وترجمة الفيديو بتقنيات Electron + React + TypeScript بدقة 1ms.
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                      {t('settings.aboutDesc')}
                     </p>
                   </div>
                 </div>
@@ -325,22 +315,16 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
                   <button
                     onClick={handleCheckUpdates}
                     disabled={checkingUpdates}
-                    className="flex items-center gap-2 px-4 py-2 bg-brand-indigo-700 hover:bg-brand-indigo-600 text-slate-200 rounded-lg font-medium border border-brand-indigo-600 transition"
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-brand-indigo-700 dark:hover:bg-brand-indigo-600 dark:text-slate-200 rounded-lg font-medium border border-slate-300 dark:border-brand-indigo-600 transition"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${checkingUpdates ? 'animate-spin' : ''}`} />
                     <span>
-                      {checkingUpdates
-                        ? language === 'ar'
-                          ? 'جاري فحص GitHub Releases...'
-                          : 'Checking Releases...'
-                        : language === 'ar'
-                        ? 'فحص التحديثات (Check Updates)'
-                        : 'Check for Updates'}
+                      {checkingUpdates ? t('settings.checking') : t('settings.checkUpdates')}
                     </span>
                   </button>
 
                   {updateStatus && (
-                    <div className="mt-3 p-3 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 flex items-center gap-2">
+                    <div className="mt-3 p-3 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-300 flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 shrink-0" />
                       <span>{updateStatus}</span>
                     </div>

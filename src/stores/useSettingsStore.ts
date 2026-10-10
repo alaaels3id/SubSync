@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import i18n from '@/i18n';
 
 export type AppTheme = 'dark' | 'light' | 'system';
 export type AppLanguage = 'ar' | 'en';
@@ -62,6 +63,7 @@ export const useSettingsStore = create<SettingsState>()(
 
       setLanguage: (language) => {
         set({ language });
+        i18n.changeLanguage(language);
         if (typeof document !== 'undefined') {
           document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
           document.documentElement.setAttribute('lang', language);
@@ -80,6 +82,7 @@ export const useSettingsStore = create<SettingsState>()(
       onRehydrateStorage: () => (state) => {
         if (state) {
           applyThemeToDOM(state.theme);
+          i18n.changeLanguage(state.language);
           if (typeof document !== 'undefined') {
             document.documentElement.setAttribute('dir', state.language === 'ar' ? 'rtl' : 'ltr');
             document.documentElement.setAttribute('lang', state.language);

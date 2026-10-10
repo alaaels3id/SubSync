@@ -13,11 +13,12 @@ import {
 } from 'lucide-react';
 import { useSubtitlesStore } from '@/stores/useSubtitlesStore';
 import { usePlayerStore } from '@/stores/usePlayerStore';
-import { useSettingsStore } from '@/stores/useSettingsStore';
 import { msToTimecode, timecodeToMs } from '@/core/srt';
 import { SubtitleCue } from '@/types/subtitles';
+import { useTranslation } from 'react-i18next';
 
 export const SubtitleTable: React.FC = () => {
+  const { t } = useTranslation();
   const {
     tracks,
     activeTrackId,
@@ -34,7 +35,6 @@ export const SubtitleTable: React.FC = () => {
   } = useSubtitlesStore();
 
   const { currentTime, setCurrentTime } = usePlayerStore();
-  const { language } = useSettingsStore();
 
   // Search & Replace state
   const [searchQuery, setSearchQuery] = useState('');
@@ -112,18 +112,18 @@ export const SubtitleTable: React.FC = () => {
             className="flex items-center gap-1.5 px-2.5 py-1 bg-brand-teal/90 hover:bg-brand-teal text-white text-xs font-medium rounded-lg shadow-sm transition"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>{language === 'ar' ? 'إضافة سطر (N)' : 'Add Line (N)'}</span>
+            <span>{t('table.addLine')}</span>
           </button>
 
           {selectedCueIds.length > 0 && (
             <button
               onClick={deleteSelectedCues}
               className="flex items-center gap-1 px-2.5 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-600 dark:text-rose-300 text-xs font-medium rounded-lg border border-rose-500/30 transition"
-              title={language === 'ar' ? 'حذف المحدد' : 'Delete Selected'}
+              title={t('table.deleteSelected')}
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>
-                {language === 'ar' ? `حذف (${selectedCueIds.length})` : `Delete (${selectedCueIds.length})`}
+                {t('common.delete')} ({selectedCueIds.length})
               </span>
             </button>
           )}
@@ -133,10 +133,10 @@ export const SubtitleTable: React.FC = () => {
             <button
               onClick={() => mergeCues(selectedCueIds[0], selectedCueIds[1])}
               className="flex items-center gap-1 px-2.5 py-1 bg-brand-mauve/20 hover:bg-brand-mauve/40 text-brand-mauve dark:text-slate-200 text-xs font-medium rounded-lg border border-brand-mauve/40 transition"
-              title={language === 'ar' ? 'دمج السطرين المحددين' : 'Merge 2 Selected Cues'}
+              title={t('table.mergeTitle')}
             >
               <Merge className="w-3.5 h-3.5 text-brand-mauve dark:text-brand-apricot" />
-              <span>{language === 'ar' ? 'دمج' : 'Merge'}</span>
+              <span>{t('table.merge')}</span>
             </button>
           )}
         </div>
@@ -148,13 +148,13 @@ export const SubtitleTable: React.FC = () => {
             className={`p-1.5 rounded-lg text-xs flex items-center gap-1 transition ${
               showSearch ? 'bg-brand-teal text-white' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800'
             }`}
-            title={language === 'ar' ? 'بحث واستبدال' : 'Find & Replace'}
+            title={t('table.findAndReplace')}
           >
             <Search className="w-3.5 h-3.5" />
           </button>
 
           <span className="text-[11px] text-slate-600 dark:text-slate-400 font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800">
-            {cues.length} {language === 'ar' ? 'سطر' : 'lines'}
+            {cues.length} {t('table.linesCount')}
           </span>
         </div>
       </div>
@@ -168,7 +168,7 @@ export const SubtitleTable: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={language === 'ar' ? 'بحث عن نص...' : 'Search text...'}
+              placeholder={t('table.searchPlaceholder')}
               className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-md pr-8 pl-2 py-1 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-brand-teal"
             />
           </div>
@@ -178,7 +178,7 @@ export const SubtitleTable: React.FC = () => {
               type="text"
               value={replaceQuery}
               onChange={(e) => setReplaceQuery(e.target.value)}
-              placeholder={language === 'ar' ? 'استبدال بـ...' : 'Replace with...'}
+              placeholder={t('table.replacePlaceholder')}
               className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-md px-2 py-1 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-brand-teal"
             />
           </div>
@@ -188,7 +188,7 @@ export const SubtitleTable: React.FC = () => {
             disabled={!searchQuery.trim()}
             className="px-3 py-1 bg-brand-teal hover:bg-brand-teal-600 disabled:opacity-40 text-white rounded-md font-medium transition"
           >
-            {language === 'ar' ? 'استبدال الكل' : 'Replace All'}
+            {t('table.replaceAll')}
           </button>
 
           <button
@@ -209,11 +209,11 @@ export const SubtitleTable: React.FC = () => {
           <thead className="sticky top-0 bg-slate-100/90 dark:bg-slate-900/95 backdrop-blur-sm z-10 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
             <tr>
               <th className="py-2 px-3 w-12 text-center">#</th>
-              <th className="py-2 px-2 w-28 text-center">{language === 'ar' ? 'البداية' : 'Start'}</th>
-              <th className="py-2 px-2 w-28 text-center">{language === 'ar' ? 'النهاية' : 'End'}</th>
-              <th className="py-2 px-2 w-20 text-center">{language === 'ar' ? 'المدة' : 'Duration'}</th>
-              <th className="py-2 px-3 text-right">{language === 'ar' ? 'نص الترجمة' : 'Subtitle Text'}</th>
-              <th className="py-2 px-3 w-28 text-center">{language === 'ar' ? 'إجراءات' : 'Actions'}</th>
+              <th className="py-2 px-2 w-28 text-center">{t('table.start')}</th>
+              <th className="py-2 px-2 w-28 text-center">{t('table.end')}</th>
+              <th className="py-2 px-2 w-20 text-center">{t('table.duration')}</th>
+              <th className="py-2 px-3 text-right">{t('table.subtitleText')}</th>
+              <th className="py-2 px-3 w-28 text-center">{t('table.actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 font-sans">
@@ -244,7 +244,7 @@ export const SubtitleTable: React.FC = () => {
                         e.stopPropagation();
                         handleSeekToCue(cue.startTime);
                       }}
-                      title={language === 'ar' ? 'الانتقال للسطر بالفيديو' : 'Jump video to cue'}
+                      title={t('table.jumpVideo')}
                       className="inline-flex items-center justify-center p-0.5 rounded hover:bg-brand-teal/20 hover:text-brand-teal transition"
                     >
                       {isActive ? <PlayCircle className="w-3.5 h-3.5 text-brand-teal dark:text-brand-apricot" /> : cue.index}
@@ -270,7 +270,7 @@ export const SubtitleTable: React.FC = () => {
                           startEditTime(cue, 'start');
                         }}
                         className="cursor-text px-1 py-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 transition text-slate-700 dark:text-slate-300"
-                        title={language === 'ar' ? 'نقر مزدوج لتعديل الوقت' : 'Double click to edit'}
+                        title={t('table.doubleClickEdit')}
                       >
                         {msToTimecode(cue.startTime)}
                       </span>
@@ -296,7 +296,7 @@ export const SubtitleTable: React.FC = () => {
                           startEditTime(cue, 'end');
                         }}
                         className="cursor-text px-1 py-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 transition text-slate-700 dark:text-slate-300"
-                        title={language === 'ar' ? 'نقر مزدوج لتعديل الوقت' : 'Double click to edit'}
+                        title={t('table.doubleClickEdit')}
                       >
                         {msToTimecode(cue.endTime)}
                       </span>
@@ -317,7 +317,7 @@ export const SubtitleTable: React.FC = () => {
                         onChange={(e) => updateCue(cue.id, { text: e.target.value })}
                         onClick={(e) => e.stopPropagation()}
                         className="w-full bg-transparent hover:bg-slate-100/70 dark:hover:bg-slate-950/40 focus:bg-white dark:focus:bg-slate-950 border border-transparent focus:border-brand-teal rounded px-2 py-1 text-slate-900 dark:text-slate-100 text-xs resize-none focus:outline-none transition leading-relaxed font-sans"
-                        placeholder={language === 'ar' ? 'أدخل نص الترجمة هنا...' : 'Enter subtitle text...'}
+                        placeholder={t('table.enterSubtitlePlaceholder')}
                         dir="auto"
                       />
 
@@ -341,7 +341,7 @@ export const SubtitleTable: React.FC = () => {
                           e.stopPropagation();
                           snapCueToPlayhead(cue.id, 'start', currentTime);
                         }}
-                        title={language === 'ar' ? 'محاذاة البداية مع مؤشر التشغيل' : 'Snap start to playhead'}
+                        title={t('table.snapStart')}
                         className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-brand-apricot transition"
                       >
                         <Clock className="w-3.5 h-3.5" />
@@ -352,7 +352,7 @@ export const SubtitleTable: React.FC = () => {
                           e.stopPropagation();
                           splitCue(cue.id, cue.startTime + (cue.endTime - cue.startTime) / 2);
                         }}
-                        title={language === 'ar' ? 'تقسيم السطر من المنتصف' : 'Split cue'}
+                        title={t('table.split')}
                         className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition"
                       >
                         <Scissors className="w-3.5 h-3.5" />
@@ -363,7 +363,7 @@ export const SubtitleTable: React.FC = () => {
                           e.stopPropagation();
                           handleDuplicate(cue);
                         }}
-                        title={language === 'ar' ? 'تكرار السطر' : 'Duplicate'}
+                        title={t('table.duplicate')}
                         className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition"
                       >
                         <Copy className="w-3.5 h-3.5" />
@@ -374,7 +374,7 @@ export const SubtitleTable: React.FC = () => {
                           e.stopPropagation();
                           deleteCue(cue.id);
                         }}
-                        title={language === 'ar' ? 'حذف' : 'Delete'}
+                        title={t('table.delete')}
                         className="p-1 rounded hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -388,9 +388,7 @@ export const SubtitleTable: React.FC = () => {
             {filteredCues.length === 0 && (
               <tr>
                 <td colSpan={6} className="py-12 text-center text-slate-500">
-                  {language === 'ar'
-                    ? 'لا توجد أسطر ترجمة. اضغط "إضافة سطر" للبدء.'
-                    : 'No subtitle lines found. Click "Add Line" to start.'}
+                  {t('table.noCuesMessage')}
                 </td>
               </tr>
             )}

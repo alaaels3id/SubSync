@@ -13,8 +13,10 @@ import { useSubtitlesStore } from '@/stores/useSubtitlesStore';
 import { useNotificationStore } from '@/stores/useNotificationStore';
 import { useSettingsStore, applyThemeToDOM } from '@/stores/useSettingsStore';
 import { parseSrt } from '@/core/srt';
+import { useTranslation } from 'react-i18next';
 
 export const App: React.FC = () => {
+  const { t } = useTranslation();
   const { setVideoSource, togglePlay, seekRelative, currentTime } = usePlayerStore();
   const {
     activeTrackId,
@@ -55,7 +57,7 @@ export const App: React.FC = () => {
           });
           addNotification(
             'success',
-            language === 'ar' ? 'تم فتح الفيديو بنجاح' : 'Video Loaded',
+            t('notifications.videoLoaded'),
             file.fileName
           );
         }
@@ -77,7 +79,7 @@ export const App: React.FC = () => {
             });
             addNotification(
               'success',
-              language === 'ar' ? 'تم فتح الفيديو' : 'Video Loaded',
+              t('notifications.videoLoaded'),
               f.name
             );
           }
@@ -86,7 +88,7 @@ export const App: React.FC = () => {
       }
     } catch (err) {
       console.error(err);
-      addNotification('error', language === 'ar' ? 'خطأ' : 'Error', 'Failed to open video file');
+      addNotification('error', t('notifications.errorTitle'), t('notifications.failedToOpenVideo'));
     }
   };
 
@@ -100,10 +102,8 @@ export const App: React.FC = () => {
           setTrackCues(activeTrackId, parsedCues);
           addNotification(
             'success',
-            language === 'ar' ? 'تم استيراد الترجمة بنجاح' : 'SRT Imported',
-            language === 'ar'
-              ? `تم استيراد ${parsedCues.length} سطر ترجمة من ${result.fileName}`
-              : `Imported ${parsedCues.length} cues from ${result.fileName}`
+            t('notifications.srtImported'),
+            `${parsedCues.length} ${t('export.cues')} • ${result.fileName}`
           );
         }
       } else {
@@ -122,8 +122,8 @@ export const App: React.FC = () => {
               setTrackCues(activeTrackId, parsedCues);
               addNotification(
                 'success',
-                language === 'ar' ? 'تم استيراد الترجمة' : 'SRT Imported',
-                `${parsedCues.length} cues`
+                t('notifications.srtImported'),
+                `${parsedCues.length} ${t('export.cues')}`
               );
             };
             reader.readAsText(f);
@@ -133,7 +133,7 @@ export const App: React.FC = () => {
       }
     } catch (err) {
       console.error(err);
-      addNotification('error', language === 'ar' ? 'خطأ' : 'Error', 'Failed to import SRT');
+      addNotification('error', t('notifications.errorTitle'), t('notifications.failedToImportSrt'));
     }
   };
 

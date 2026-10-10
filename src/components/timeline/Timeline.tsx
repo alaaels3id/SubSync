@@ -7,11 +7,12 @@ import {
 } from 'lucide-react';
 import { useSubtitlesStore } from '@/stores/useSubtitlesStore';
 import { usePlayerStore } from '@/stores/usePlayerStore';
-import { useSettingsStore } from '@/stores/useSettingsStore';
 import { formatDisplayTime } from '@/core/srt';
 import { SubtitleCue } from '@/types/subtitles';
+import { useTranslation } from 'react-i18next';
 
 export const Timeline: React.FC = () => {
+  const { t } = useTranslation();
   const {
     tracks,
     activeTrackId,
@@ -23,7 +24,6 @@ export const Timeline: React.FC = () => {
   } = useSubtitlesStore();
 
   const { currentTime, duration, setCurrentTime } = usePlayerStore();
-  const { language } = useSettingsStore();
 
   const timelineContainerRef = useRef<HTMLDivElement>(null);
   const trackContainerRef = useRef<HTMLDivElement>(null);
@@ -181,14 +181,14 @@ export const Timeline: React.FC = () => {
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 rounded-lg p-0.5 border border-slate-200 dark:border-slate-800">
             <button
               onClick={() => shiftAllCues(-500)}
-              title={language === 'ar' ? 'تأخير الكل بمقدار -500ms' : 'Global Offset -500ms'}
+              title={t('timeline.offsetMinus500')}
               className="px-2 py-0.5 rounded text-[11px] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition"
             >
               -500ms
             </button>
             <button
               onClick={() => shiftAllCues(-100)}
-              title={language === 'ar' ? 'تأخير الكل بمقدار -100ms' : 'Global Offset -100ms'}
+              title={t('timeline.offsetMinus100')}
               className="px-1.5 py-0.5 rounded text-[11px] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition"
             >
               -100ms
@@ -196,14 +196,14 @@ export const Timeline: React.FC = () => {
             <span className="text-slate-300 dark:text-slate-600 px-0.5 text-[10px]">|</span>
             <button
               onClick={() => shiftAllCues(100)}
-              title={language === 'ar' ? 'تقديم الكل بمقدار +100ms' : 'Global Offset +100ms'}
+              title={t('timeline.offsetPlus100')}
               className="px-1.5 py-0.5 rounded text-[11px] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition"
             >
               +100ms
             </button>
             <button
               onClick={() => shiftAllCues(500)}
-              title={language === 'ar' ? 'تقديم الكل بمقدار +500ms' : 'Global Offset +500ms'}
+              title={t('timeline.offsetPlus500')}
               className="px-2 py-0.5 rounded text-[11px] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition"
             >
               +500ms
@@ -215,10 +215,10 @@ export const Timeline: React.FC = () => {
             <button
               onClick={() => snapCueToPlayhead(selectedCueIds[0], 'start', currentTime)}
               className="flex items-center gap-1 px-2.5 py-1 bg-brand-teal/10 dark:bg-brand-teal/20 text-brand-teal dark:text-brand-teal-300 border border-brand-teal/30 dark:border-brand-teal/40 rounded-lg hover:bg-brand-teal/20 transition text-xs font-medium"
-              title={language === 'ar' ? 'محاذاة بداية السطر مع المؤشر' : 'Snap start to playhead'}
+              title={t('timeline.snapTitle')}
             >
               <Clock className="w-3.5 h-3.5 text-brand-teal dark:text-brand-apricot" />
-              <span>{language === 'ar' ? 'محاذاة للمؤشر' : 'Snap to Playhead'}</span>
+              <span>{t('timeline.snapToPlayhead')}</span>
             </button>
           )}
 
@@ -230,10 +230,10 @@ export const Timeline: React.FC = () => {
                 ? 'bg-brand-mauve/15 dark:bg-brand-mauve/20 border-brand-mauve/30 dark:border-brand-mauve/40 text-brand-mauve dark:text-brand-apricot font-medium'
                 : 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
             }`}
-            title={language === 'ar' ? 'إظهار / إخفاء الموجة الصوتية' : 'Toggle Audio Waveform'}
+            title={t('timeline.toggleWaveform')}
           >
             <Volume2 className="w-3.5 h-3.5" />
-            <span>{language === 'ar' ? 'الموجة الصوتية' : 'Waveform'}</span>
+            <span>{t('timeline.waveform')}</span>
           </button>
         </div>
 
@@ -242,7 +242,7 @@ export const Timeline: React.FC = () => {
           <button
             onClick={() => setPixelsPerSecond((prev) => Math.max(20, prev - 15))}
             className="p-1 rounded text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition"
-            title="Zoom Out"
+            title={t('timeline.zoomOut')}
           >
             <ZoomOut className="w-3.5 h-3.5" />
           </button>
@@ -254,13 +254,13 @@ export const Timeline: React.FC = () => {
             value={pixelsPerSecond}
             onChange={(e) => setPixelsPerSecond(parseInt(e.target.value, 10))}
             className="w-24 h-1 bg-slate-300 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-teal"
-            title="Timeline Zoom"
+            title={t('timeline.zoomTitle')}
           />
 
           <button
             onClick={() => setPixelsPerSecond((prev) => Math.min(220, prev + 15))}
             className="p-1 rounded text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition"
-            title="Zoom In"
+            title={t('timeline.zoomIn')}
           >
             <ZoomIn className="w-3.5 h-3.5" />
           </button>
@@ -360,7 +360,7 @@ export const Timeline: React.FC = () => {
                   {/* Left Resize Handle (Start Time) */}
                   <div
                     onMouseDown={(e) => handleCueMouseDown(e, cue, 'resize-start')}
-                    title={language === 'ar' ? 'سحب لتعديل البداية' : 'Drag to adjust start'}
+                    title={t('timeline.dragStart')}
                     className="absolute left-0 top-0 bottom-0 w-2.5 bg-black/20 hover:bg-brand-apricot cursor-ew-resize opacity-0 group-hover:opacity-100 transition z-30 flex items-center justify-center"
                   >
                     <div className="w-0.5 h-3 bg-white/70 rounded-full" />
@@ -379,7 +379,7 @@ export const Timeline: React.FC = () => {
                   {/* Right Resize Handle (End Time) */}
                   <div
                     onMouseDown={(e) => handleCueMouseDown(e, cue, 'resize-end')}
-                    title={language === 'ar' ? 'سحب لتعديل النهاية' : 'Drag to adjust end'}
+                    title={t('timeline.dragEnd')}
                     className="absolute right-0 top-0 bottom-0 w-2.5 bg-black/20 hover:bg-brand-apricot cursor-ew-resize opacity-0 group-hover:opacity-100 transition z-30 flex items-center justify-center"
                   >
                     <div className="w-0.5 h-3 bg-white/70 rounded-full" />

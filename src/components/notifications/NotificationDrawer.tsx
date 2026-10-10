@@ -2,8 +2,10 @@ import React from 'react';
 import { X, Bell, Check, Trash2, Info, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
 import { useNotificationStore, NotificationType } from '@/stores/useNotificationStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useTranslation } from 'react-i18next';
 
 export const NotificationDrawer: React.FC = () => {
+  const { t } = useTranslation();
   const { notifications, isOpen, setIsOpen, markAsRead, markAllAsRead, clearAll } =
     useNotificationStore();
   const { language } = useSettingsStore();
@@ -37,7 +39,7 @@ export const NotificationDrawer: React.FC = () => {
           <div className="flex items-center gap-2">
             <Bell className="w-4 h-4 text-brand-apricot" />
             <h3 className="text-sm font-semibold text-slate-100">
-              {language === 'ar' ? 'مركز الإشعارات' : 'Notification Center'}
+              {t('notifications.title')}
             </h3>
           </div>
           <button onClick={() => setIsOpen(false)} className="p-1 text-slate-400 hover:text-white">
@@ -52,14 +54,14 @@ export const NotificationDrawer: React.FC = () => {
             className="hover:text-slate-200 transition flex items-center gap-1"
           >
             <Check className="w-3 h-3" />
-            <span>{language === 'ar' ? 'تحديد الكل كمقروء' : 'Mark all read'}</span>
+            <span>{t('notifications.markAllRead')}</span>
           </button>
           <button
             onClick={clearAll}
             className="hover:text-rose-400 transition flex items-center gap-1"
           >
             <Trash2 className="w-3 h-3" />
-            <span>{language === 'ar' ? 'مسح السجل' : 'Clear all'}</span>
+            <span>{t('notifications.clearAll')}</span>
           </button>
         </div>
 
@@ -91,7 +93,7 @@ export const NotificationDrawer: React.FC = () => {
 
           {notifications.length === 0 && (
             <div className="py-16 text-center text-slate-500 text-xs">
-              {language === 'ar' ? 'سجل الإشعارات فارغ' : 'No notifications'}
+              {t('notifications.empty')}
             </div>
           )}
         </div>

@@ -3,8 +3,8 @@ import { X, Download, AlertTriangle } from 'lucide-react';
 import { useSubtitlesStore } from '@/stores/useSubtitlesStore';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useNotificationStore } from '@/stores/useNotificationStore';
-import { useSettingsStore } from '@/stores/useSettingsStore';
 import { serializeSrt, validateCues } from '@/core/srt';
+import { useTranslation } from 'react-i18next';
 
 interface ExportDialogProps {
   isOpen: boolean;
@@ -12,10 +12,10 @@ interface ExportDialogProps {
 }
 
 export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
   const { tracks, activeTrackId } = useSubtitlesStore();
   const { projectName } = useProjectStore();
   const { addNotification } = useNotificationStore();
-  const { language } = useSettingsStore();
 
   const [selectedTrackId, setSelectedTrackId] = useState(activeTrackId);
 
@@ -40,10 +40,8 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
         if (result.success && result.filePath) {
           addNotification(
             'success',
-            language === 'ar' ? 'تم تصدير الترجمة بنجاح' : 'Export Succeeded',
-            language === 'ar'
-              ? `تم حفظ ملف ${track.language}.srt في:\n${result.filePath}`
-              : `Saved ${track.language}.srt to:\n${result.filePath}`
+            t('export.successTitle'),
+            `${t('export.successMessage')} \n${result.filePath}`
           );
           onClose();
         }
@@ -59,8 +57,8 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
 
         addNotification(
           'success',
-          language === 'ar' ? 'تم تنزيل ملف الترجمة' : 'Downloaded SRT file',
-          `${defaultFilename}`
+          t('export.successTitle'),
+          defaultFilename
         );
         onClose();
       }
@@ -68,8 +66,8 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
       console.error(err);
       addNotification(
         'error',
-        language === 'ar' ? 'فشل تصدير الترجمة' : 'Export Failed',
-        language === 'ar' ? 'حدث خطأ أثناء حفظ الملف' : 'An error occurred while saving file'
+        t('export.errorTitle'),
+        t('export.errorMessage')
       );
     }
   };
@@ -82,7 +80,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
           <div className="flex items-center gap-2">
             <Download className="w-5 h-5 text-brand-apricot" />
             <h3 className="text-base font-semibold">
-              {language === 'ar' ? 'تصدير ملف الترجمة (Export SRT)' : 'Export SRT Subtitle'}
+              {t('export.title')}
             </h3>
           </div>
           <button onClick={onClose} className="p-1 text-slate-400 hover:text-white transition">
@@ -95,16 +93,16 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
           {/* Select Track / Language */}
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1.5">
-              {language === 'ar' ? 'اختر مسار اللغة للتصدير:' : 'Select Subtitle Track / Language:'}
+              {t('export.selectTrack')}
             </label>
             <select
               value={selectedTrackId}
               onChange={(e) => setSelectedTrackId(e.target.value)}
               className="w-full bg-slate-950 border border-brand-indigo-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-teal"
             >
-              {tracks.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.label} ({t.cues.length} {language === 'ar' ? 'سطر' : 'cues'})
+              {tracks.map((tItem) => (
+                <option key={tItem.id} value={tItem.id}>
+                  {tItem.label} ({tItem.cues.length} {t('export.cues')})
                 </option>
               ))}
             </select>
@@ -116,14 +114,10 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
               <div>
                 <p className="font-semibold mb-1">
-                  {language === 'ar'
-                    ? `تنبيه: يوجد ${validationErrors.length} ملاحظة في التوقيت`
-                    : `Warning: ${validationErrors.length} timing issues detected`}
+                  {t('export.warning')} ({validationErrors.length})
                 </p>
                 <p className="opacity-90">
-                  {language === 'ar'
-                    ? 'يمكنك متابعة التصدير، ولكن يُفضل مراجعة التداخلات والأوقات الفارغة.'
-                    : 'You may proceed with export, but review overlaps and blank lines.'}
+                  {t('export.warningDesc')}
                 </p>
               </div>
             </div>
@@ -132,10 +126,10 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
           {/* Preview Box */}
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1.5">
-              {language === 'ar' ? 'معاينة ملف SRT (ترميز UTF-8):' : 'SRT File Preview (UTF-8 Encoding):'}
+              {t('export.preview')}
             </label>
             <pre className="h-48 bg-slate-950 border border-brand-indigo-800 rounded-lg p-3 text-[11px] font-mono text-slate-300 overflow-y-auto whitespace-pre-wrap select-text leading-relaxed">
-              {srtContent || (language === 'ar' ? 'لا يوجد أسطر في هذا المسار' : 'No cues in this track')}
+              {srtContent || t('export.noCues')}
             </pre>
           </div>
         </div>
@@ -143,14 +137,14 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
         {/* Footer */}
         <div className="px-5 py-3.5 border-t border-brand-indigo-700/80 bg-slate-950/40 flex items-center justify-between">
           <span className="text-[11px] text-slate-400 font-mono">
-            {track?.cues.length} {language === 'ar' ? 'أسطر' : 'cues'} • UTF-8
+            {track?.cues.length} {t('export.cues')} • UTF-8
           </span>
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
               className="px-3.5 py-1.5 rounded-lg text-xs text-slate-300 hover:text-white hover:bg-slate-800 transition"
             >
-              {language === 'ar' ? 'إلغاء' : 'Cancel'}
+              {t('common.cancel')}
             </button>
             <button
               onClick={handleExport}
@@ -158,7 +152,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ isOpen, onClose }) =
               className="flex items-center gap-1.5 px-4 py-1.5 bg-brand-teal hover:bg-brand-teal-600 disabled:opacity-40 text-white text-xs font-medium rounded-lg shadow-sm transition"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>{language === 'ar' ? 'حفظ وتصدير' : 'Save & Export'}</span>
+              <span>{t('export.saveAndExport')}</span>
             </button>
           </div>
         </div>
