@@ -28,6 +28,7 @@ export interface ElectronAPI {
     message: string;
     sound?: boolean;
   }) => Promise<boolean>;
+  openSystemNotificationSettings: () => Promise<boolean>;
 }
 
 const api: ElectronAPI = {
@@ -38,6 +39,7 @@ const api: ElectronAPI = {
   writeFile: (filePath, content) => ipcRenderer.invoke('fs:writeFile', { filePath, content }),
   getAppVersion: () => ipcRenderer.invoke('app:getVersion'),
   showNotification: (options) => ipcRenderer.invoke('notification:show', options),
+  openSystemNotificationSettings: () => ipcRenderer.invoke('settings:openNotifications'),
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);

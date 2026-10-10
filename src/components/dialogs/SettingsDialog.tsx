@@ -9,7 +9,8 @@ import {
   Info,
   Send,
   RefreshCw,
-  CheckCircle
+  CheckCircle,
+  ExternalLink
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSettingsStore, AppTheme, AppLanguage } from '@/stores/useSettingsStore';
@@ -42,21 +43,45 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
   const [checkingUpdates, setCheckingUpdates] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<string | null>(null);
 
+  const [systemPermission, setSystemPermission] = useState<NotificationPermission>(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      return Notification.permission;
+    }
+    return 'default';
+  });
+
   if (!isOpen) return null;
 
-  const handleSendTestNotification = () => {
+  const handleRequestPermission = async () => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      try {
+        const perm = await Notification.requestPermission();
+        setSystemPermission(perm);
+      } catch (e) {
+        console.warn('requestPermission error:', e);
+      }
+    }
+  };
+
+  const handleOpenSystemSettings = async () => {
+    if (window.electronAPI?.openSystemNotificationSettings) {
+      await window.electronAPI.openSystemNotificationSettings();
+    }
+  };
+
+  const handleSendTestNotification = async () => {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      try {
+        const perm = await Notification.requestPermission();
+        setSystemPermission(perm);
+      } catch {}
+    }
+
     addNotification(
       'test',
       t('settings.testSentTitle'),
       t('settings.testSentDesc')
     );
-    if (window.electronAPI?.showNotification) {
-      window.electronAPI.showNotification({
-        title: t('settings.testSentTitle'),
-        message: t('settings.testSentDesc'),
-        sound: true,
-      }).catch((err) => console.warn(err));
-    }
   };
 
   const handleCheckUpdates = () => {
@@ -287,6 +312,54 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
                     onChange={(e) => setNotificationsEnabled(e.target.checked)}
                     className="w-4 h-4 accent-brand-teal cursor-pointer"
                   />
+                </div>
+
+                {/* macOS / OS System Permission Status Card */}
+                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-brand-indigo-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-xs text-slate-800 dark:text-slate-200">
+                        {t('settings.systemPermission')}
+                      </p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        {systemPermission === 'granted'
+                          ? t('settings.permissionGranted')
+                          : systemPermission === 'denied'
+                          ? t('settings.permissionDenied')
+                          : t('settings.permissionDefault')}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {systemPermission === 'granted' && (
+                        <span className="flex items-center gap-1 px-2.5 py-1 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded-lg text-xs font-medium">
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          <span>{t('settings.permissionGranted')}</span>
+                        </span>
+                      )}
+
+                      {systemPermission === 'default' && (
+                        <button
+                          type="button"
+                          onClick={handleRequestPermission}
+                          className="flex items-center gap-1 px-3 py-1 bg-brand-teal hover:bg-brand-teal-600 text-white rounded-lg text-xs font-medium transition shadow-sm"
+                        >
+                          <Bell className="w-3.5 h-3.5" />
+                          <span>{t('settings.requestPermission')}</span>
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={handleOpenSystemSettings}
+                        title={t('settings.openSystemSettings')}
+                        className="flex items-center gap-1 px-2.5 py-1 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs transition"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>{t('settings.openSystemSettings')}</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Send Test Notification Button (NOT-05) */}

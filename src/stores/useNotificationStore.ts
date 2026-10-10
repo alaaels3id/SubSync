@@ -55,7 +55,24 @@ export const useNotificationStore = create<NotificationState>((set) => ({
       toasts: [...state.toasts, newNotif],
     }));
 
-    // Trigger OS-level desktop notification via Electron / node-notifier
+    // Trigger OS-level desktop notification
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'granted') {
+        try {
+          new Notification(title, { body: message });
+        } catch {}
+      } else if (Notification.permission === 'default') {
+        Notification.requestPermission().then((perm) => {
+          if (perm === 'granted') {
+            try {
+              new Notification(title, { body: message });
+            } catch {}
+          }
+        }).catch(() => {});
+      }
+    }
+
+    // Trigger Electron main-process native notification
     if (typeof window !== 'undefined' && window.electronAPI?.showNotification) {
       window.electronAPI.showNotification({
         title,

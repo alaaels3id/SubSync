@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, protocol, net, nativeImage, Notification } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, protocol, net, nativeImage, Notification, shell } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import fsSync from 'node:fs';
@@ -227,6 +227,21 @@ app.whenReady().then(() => {
   ipcMain.handle('notification:show', (_, { title, message, sound }: { title: string; message: string; sound?: boolean }) => {
     showNativeNotification(title, message, sound ?? true);
     return true;
+  });
+
+  // Open OS system notification preferences
+  ipcMain.handle('settings:openNotifications', async () => {
+    try {
+      if (process.platform === 'darwin') {
+        await shell.openExternal('x-apple.systempreferences:com.apple.preference.notifications');
+      } else if (process.platform === 'win32') {
+        await shell.openExternal('ms-settings:notifications');
+      }
+      return true;
+    } catch (e) {
+      console.warn('Failed to open system notification settings:', e);
+      return false;
+    }
   });
 
   // Set macOS dock icon
