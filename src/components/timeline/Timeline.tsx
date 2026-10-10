@@ -3,11 +3,12 @@ import {
   ZoomIn,
   ZoomOut,
   Clock,
-  Volume2
+  Volume2,
+  Magnet
 } from 'lucide-react';
 import { useSubtitlesStore } from '@/stores/useSubtitlesStore';
 import { usePlayerStore } from '@/stores/usePlayerStore';
-import { formatDisplayTime } from '@/core/srt';
+import { formatDisplayTime, msToTimecode } from '@/core/srt';
 import { SubtitleCue } from '@/types/subtitles';
 import { useTranslation } from 'react-i18next';
 
@@ -31,6 +32,8 @@ export const Timeline: React.FC = () => {
   // Zoom level: pixels per second (e.g. 40px = 1 sec, up to 250px)
   const [pixelsPerSecond, setPixelsPerSecond] = useState<number>(60);
   const [showWaveform, setShowWaveform] = useState<boolean>(true);
+  const [isMagnetEnabled, setIsMagnetEnabled] = useState<boolean>(true);
+  const [snapGuideMs, setSnapGuideMs] = useState<number | null>(null);
 
   // Dragging state
   const [dragState, setDragState] = useState<{
@@ -113,7 +116,7 @@ export const Timeline: React.FC = () => {
     });
   };
 
-  // Global mouse move and mouse up for fluid dragging
+  // Global mouse move and mouse up for fluid dragging with magnetic snapping (SYNC-05)
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!dragState) return;
@@ -121,23 +124,109 @@ export const Timeline: React.FC = () => {
       const deltaPx = e.clientX - dragState.initialMouseX;
       const deltaMs = pixelsToMs(deltaPx);
 
+      // Magnetic snapping active when enabled and not bypassed via Alt key
+      const isSnapping = isMagnetEnabled && !e.altKey;
+      const thresholdMs = Math.max(160, pixelsToMs(14));
+
+      // Gather snap target points from all other cues and the playhead
+      const otherCues = cues.filter((c) => c.id !== dragState.cueId);
+      const snapPoints: number[] = [currentTime];
+      for (const oc of otherCues) {
+        snapPoints.push(oc.startTime);
+        snapPoints.push(oc.endTime);
+      }
+
       if (dragState.mode === 'move') {
         const cueDuration = dragState.initialEndTime - dragState.initialStartTime;
-        const newStart = Math.max(0, dragState.initialStartTime + deltaMs);
-        const newEnd = newStart + cueDuration;
-        updateCue(dragState.cueId, { startTime: newStart, endTime: newEnd });
+        let rawStart = Math.max(0, dragState.initialStartTime + deltaMs);
+        let rawEnd = rawStart + cueDuration;
+        let activeSnapGuide: number | null = null;
+
+        if (isSnapping) {
+          let minDiff = Infinity;
+          let snappedStart: number | null = null;
+          let guide: number | null = null;
+
+          for (const pt of snapPoints) {
+            // Check snapping start edge to adjacent end or playhead
+            const diffStart = Math.abs(rawStart - pt);
+            if (diffStart <= thresholdMs && diffStart < minDiff) {
+              minDiff = diffStart;
+              snappedStart = pt;
+              guide = pt;
+            }
+
+            // Check snapping end edge to adjacent start or playhead
+            const diffEnd = Math.abs(rawEnd - pt);
+            if (diffEnd <= thresholdMs && diffEnd < minDiff) {
+              minDiff = diffEnd;
+              snappedStart = Math.max(0, pt - cueDuration);
+              guide = pt;
+            }
+          }
+
+          if (snappedStart !== null) {
+            rawStart = snappedStart;
+            rawEnd = rawStart + cueDuration;
+            activeSnapGuide = guide;
+          }
+        }
+
+        updateCue(dragState.cueId, { startTime: rawStart, endTime: rawEnd });
+        setSnapGuideMs(activeSnapGuide);
       } else if (dragState.mode === 'resize-start') {
-        const newStart = Math.max(0, Math.min(dragState.initialStartTime + deltaMs, dragState.initialEndTime - 100));
+        let rawStart = dragState.initialStartTime + deltaMs;
+        let activeSnapGuide: number | null = null;
+
+        if (isSnapping) {
+          let minDiff = Infinity;
+          let bestSnap: number | null = null;
+          for (const pt of snapPoints) {
+            const diff = Math.abs(rawStart - pt);
+            if (diff <= thresholdMs && diff < minDiff) {
+              minDiff = diff;
+              bestSnap = pt;
+            }
+          }
+          if (bestSnap !== null) {
+            rawStart = bestSnap;
+            activeSnapGuide = bestSnap;
+          }
+        }
+
+        const newStart = Math.max(0, Math.min(rawStart, dragState.initialEndTime - 100));
         updateCue(dragState.cueId, { startTime: newStart });
+        setSnapGuideMs(activeSnapGuide);
       } else if (dragState.mode === 'resize-end') {
-        const newEnd = Math.max(dragState.initialStartTime + 100, dragState.initialEndTime + deltaMs);
+        let rawEnd = dragState.initialEndTime + deltaMs;
+        let activeSnapGuide: number | null = null;
+
+        if (isSnapping) {
+          let minDiff = Infinity;
+          let bestSnap: number | null = null;
+          for (const pt of snapPoints) {
+            const diff = Math.abs(rawEnd - pt);
+            if (diff <= thresholdMs && diff < minDiff) {
+              minDiff = diff;
+              bestSnap = pt;
+            }
+          }
+          if (bestSnap !== null) {
+            rawEnd = bestSnap;
+            activeSnapGuide = bestSnap;
+          }
+        }
+
+        const newEnd = Math.max(dragState.initialStartTime + 100, rawEnd);
         updateCue(dragState.cueId, { endTime: newEnd });
+        setSnapGuideMs(activeSnapGuide);
       }
     };
 
     const handleMouseUp = () => {
       if (dragState) {
         setDragState(null);
+        setSnapGuideMs(null);
       }
     };
 
@@ -150,7 +239,7 @@ export const Timeline: React.FC = () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [dragState, pixelsToMs, updateCue]);
+  }, [dragState, pixelsToMs, updateCue, cues, currentTime, isMagnetEnabled]);
 
   // Generate ruler tick marks
   const rulerTicks = useMemo(() => {
@@ -234,6 +323,20 @@ export const Timeline: React.FC = () => {
           >
             <Volume2 className="w-3.5 h-3.5" />
             <span>{t('timeline.waveform')}</span>
+          </button>
+
+          {/* Magnetic Snapping Toggle Button (SYNC-05) */}
+          <button
+            onClick={() => setIsMagnetEnabled(!isMagnetEnabled)}
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-xs transition ${
+              isMagnetEnabled
+                ? 'bg-amber-500/15 dark:bg-amber-500/20 border-amber-500/40 text-amber-600 dark:text-brand-apricot font-medium shadow-sm'
+                : 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+            }`}
+            title={t('timeline.toggleMagnet')}
+          >
+            <Magnet className="w-3.5 h-3.5" />
+            <span>{t('timeline.magnet')}</span>
           </button>
         </div>
 
@@ -388,6 +491,19 @@ export const Timeline: React.FC = () => {
               );
             })}
           </div>
+
+          {/* Magnetic Snap Guide Line (SYNC-05) */}
+          {snapGuideMs !== null && (
+            <div
+              style={{ left: `${msToPixels(snapGuideMs)}px` }}
+              className="absolute top-0 bottom-0 w-0.5 bg-emerald-400 z-35 pointer-events-none shadow-[0_0_10px_rgba(52,211,153,0.9)] animate-pulse"
+            >
+              <div className="absolute top-1 -left-3 px-1 py-0.5 bg-emerald-500 text-slate-950 font-mono text-[9px] font-bold rounded flex items-center gap-0.5 shadow-lg">
+                <Magnet className="w-2.5 h-2.5" />
+                <span>{msToTimecode(snapGuideMs).slice(3, 11)}</span>
+              </div>
+            </div>
+          )}
 
           {/* Synchronized Playhead (Red Line + Needle) */}
           <div

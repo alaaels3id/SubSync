@@ -88,7 +88,9 @@
     "zoomOut": "Zoom Out",
     "zoomTitle": "Timeline Zoom",
     "dragStart": "Drag to adjust start",
-    "dragEnd": "Drag to adjust end"
+    "dragEnd": "Drag to adjust end",
+    "magnet": "Snapping",
+    "toggleMagnet": "Toggle Magnetic Snapping to adjacent cues & playhead"
   },
   "export": {
     "title": "Export SRT Subtitle",
