@@ -2,9 +2,16 @@ import { app, BrowserWindow, ipcMain, dialog, protocol, net, nativeImage, Notifi
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import fsSync from 'node:fs';
+import { execFile } from 'node:child_process';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Set Application name & Model ID for native notifications
+app.setName('SubSync Studio');
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.subsync.studio');
+}
 
 // Register custom protocol for local video streaming with range request support
 protocol.registerSchemesAsPrivileged([
@@ -76,17 +83,40 @@ export function showNativeNotification(title: string, message: string, sound = t
   const iconPath = path.resolve(publicDir, 'icon.png');
   const icon = fsSync.existsSync(iconPath) ? nativeImage.createFromPath(iconPath) : undefined;
 
+  // 1. Electron Native Notification (Standard for packaged apps & Windows/Linux)
   if (Notification.isSupported()) {
     try {
       const notification = new Notification({
-        title,
+        title: title || 'SubSync Studio',
         body: message,
-        icon,
+        icon: process.platform !== 'darwin' ? icon : undefined, // macOS handles icon via app bundle
         silent: !sound,
       });
       notification.show();
     } catch (e) {
       console.warn('Native notification error:', e);
+    }
+  }
+
+  // 2. Guaranteed macOS Notification Banner via AppleScript
+  // Electron unsigned binaries in dev mode on macOS are suppressed by Notification Center.
+  // osascript guarantees a real native banner with chime sound on macOS.
+  if (process.platform === 'darwin') {
+    try {
+      const cleanMsg = (message || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      const cleanTitle = (title || 'SubSync Studio').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      const soundClause = sound ? ' sound name "default"' : '';
+      execFile(
+        'osascript',
+        ['-e', `display notification "${cleanMsg}" with title "${cleanTitle}"${soundClause}`],
+        (err) => {
+          if (err) {
+            console.warn('macOS osascript notification error:', err);
+          }
+        }
+      );
+    } catch (e) {
+      console.warn('Failed to dispatch macOS notification via osascript:', e);
     }
   }
 }

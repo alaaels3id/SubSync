@@ -50,6 +50,13 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ isOpen, onClose 
       t('settings.testSentTitle'),
       t('settings.testSentDesc')
     );
+    if (window.electronAPI?.showNotification) {
+      window.electronAPI.showNotification({
+        title: t('settings.testSentTitle'),
+        message: t('settings.testSentDesc'),
+        sound: true,
+      }).catch((err) => console.warn(err));
+    }
   };
 
   const handleCheckUpdates = () => {

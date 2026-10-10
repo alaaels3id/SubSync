@@ -12,7 +12,7 @@ app.whenReady().then(() => {
       const notification = new Notification({
         title: 'SubSync Studio',
         body: 'هذا إشعار تجريبي بشعار التطبيق المخصص 🎬',
-        icon,
+        icon: process.platform !== 'darwin' ? icon : undefined,
         silent: false,
       });
       notification.show();
@@ -22,6 +22,12 @@ app.whenReady().then(() => {
     }
   } else {
     console.warn('Desktop notifications are not supported on this system.');
+  }
+
+  if (process.platform === 'darwin') {
+    import('node:child_process').then(({ execFile }) => {
+      execFile('osascript', ['-e', 'display notification "هذا إشعار تجريبي بشعار التطبيق المخصص 🎬" with title "SubSync Studio" sound name "default"']);
+    });
   }
 
   setTimeout(() => {
