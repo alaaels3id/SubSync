@@ -138,6 +138,9 @@
     "projectNamePlaceholder": "مثال: فيلم وثائقي - حلقة 1",
     "primaryVideo": "فيديو المشروع الرئيسي:",
     "noVideoSelected": "لم يتم تحديد فيديو بعد",
+    "primarySubtitles": "ملف الترجمة المبدئي (SRT):",
+    "noSubtitlesSelected": "لم يتم اختيار ملف ترجمة (سيبدأ بمسار فارغ)",
+    "subtitlesLoaded": "تم تحميل {{count}} سطر ترجمة",
     "browse": "اختيار...",
     "startProject": "بدء المشروع"
   },

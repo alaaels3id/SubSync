@@ -342,6 +342,7 @@ export const App: React.FC = () => {
         isOpen={isNewProjectOpen}
         onClose={() => setIsNewProjectOpen(false)}
         onOpenVideoFile={handleOpenVideo}
+        onImportSrt={handleImportSrt}
       />
       <NotificationDrawer />
       <ToastContainer />

@@ -1,23 +1,30 @@
 import React, { useState } from 'react';
-import { X, FolderPlus, Video } from 'lucide-react';
+import { X, FolderPlus, Video, FileText } from 'lucide-react';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { usePlayerStore } from '@/stores/usePlayerStore';
+import { useSubtitlesStore } from '@/stores/useSubtitlesStore';
 import { useTranslation } from 'react-i18next';
 
 interface NewProjectDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onOpenVideoFile: () => void;
+  onImportSrt: () => void;
 }
 
 export const NewProjectDialog: React.FC<NewProjectDialogProps> = ({
   isOpen,
   onClose,
   onOpenVideoFile,
+  onImportSrt,
 }) => {
   const { t } = useTranslation();
   const { createNewProject, addRecentProject } = useProjectStore();
   const { videoSource } = usePlayerStore();
+  const { tracks, activeTrackId } = useSubtitlesStore();
+
+  const activeTrack = tracks.find((t) => t.id === activeTrackId);
+  const cuesCount = activeTrack ? activeTrack.cues.length : 0;
 
   const [name, setName] = useState('');
 
@@ -85,6 +92,30 @@ export const NewProjectDialog: React.FC<NewProjectDialogProps> = ({
             <button
               type="button"
               onClick={onOpenVideoFile}
+              className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-md border border-slate-700 transition shrink-0"
+            >
+              {t('project.browse')}
+            </button>
+          </div>
+        </div>
+
+        {/* Initial Subtitles (SRT) Picker Shortcut */}
+        <div>
+          <label className="block text-xs font-medium text-slate-300 mb-1.5">
+            {t('project.primarySubtitles')}
+          </label>
+          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-brand-indigo-800">
+            <div className="flex items-center gap-2 truncate">
+              <FileText className="w-4 h-4 text-brand-apricot shrink-0" />
+              <span className="text-xs text-slate-300 truncate">
+                {cuesCount > 0
+                  ? t('project.subtitlesLoaded', { count: cuesCount })
+                  : t('project.noSubtitlesSelected')}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={onImportSrt}
               className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-md border border-slate-700 transition shrink-0"
             >
               {t('project.browse')}

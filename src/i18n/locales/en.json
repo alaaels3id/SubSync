@@ -138,6 +138,9 @@
     "projectNamePlaceholder": "e.g. Documentary Episode 1",
     "primaryVideo": "Primary Video Source:",
     "noVideoSelected": "No video selected",
+    "primarySubtitles": "Initial Subtitles (SRT):",
+    "noSubtitlesSelected": "No subtitle file selected (will start with empty track)",
+    "subtitlesLoaded": "{{count}} subtitle cues loaded",
     "browse": "Browse...",
     "startProject": "Start Project"
   },
