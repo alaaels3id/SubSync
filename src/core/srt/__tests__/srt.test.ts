@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { msToTimecode, timecodeToMs, parseSrt, serializeSrt, validateCues } from '../index';
+import { msToTimecode, timecodeToMs, formatDisplayTime, parseSrt, serializeSrt, validateCues } from '../index';
 import { SubtitleCue } from '@/types/subtitles';
 
 describe('Subtitle Engine - Timecodes', () => {
@@ -14,6 +14,15 @@ describe('Subtitle Engine - Timecodes', () => {
     expect(timecodeToMs('00:00:01,500')).toBe(1500);
     expect(timecodeToMs('00:01:05,432')).toBe(65432);
     expect(timecodeToMs('01:01:01,005')).toBe(3661005);
+  });
+
+  it('handles dot separator as millisecond delimiter fallback', () => {
+    expect(timecodeToMs('00:00:02.500')).toBe(2500);
+  });
+
+  it('formats display time cleanly in mm:ss or hh:mm:ss format', () => {
+    expect(formatDisplayTime(65000)).toBe('01:05');
+    expect(formatDisplayTime(3665000)).toBe('01:01:05');
   });
 });
 
@@ -37,6 +46,25 @@ describe('Subtitle Engine - SRT Parser & Serializer', () => {
     expect(cues[1].startTime).toBe(4500);
     expect(cues[1].endTime).toBe(7000);
     expect(cues[1].text).toBe('ابدأ بمزامنة الترجمة مع الفيديو.');
+  });
+
+  it('strips UTF-8 BOM marker and normalizes Windows CRLF line breaks', () => {
+    const crlfSrt = '\uFEFF1\r\n00:00:01,000 --> 00:00:03,000\r\nسطر مع BOM\r\n\r\n2\r\n00:00:04,000 --> 00:00:06,000\r\nسطر ثاني\r\n';
+    const cues = parseSrt(crlfSrt);
+    expect(cues.length).toBe(2);
+    expect(cues[0].text).toBe('سطر مع BOM');
+    expect(cues[1].text).toBe('سطر ثاني');
+  });
+
+  it('preserves multi-line subtitle texts', () => {
+    const multiLineSrt = `1
+00:00:01,000 --> 00:00:04,000
+السطر الأول هنا
+وهذا هو السطر الثاني
+`;
+    const cues = parseSrt(multiLineSrt);
+    expect(cues.length).toBe(1);
+    expect(cues[0].text).toBe('السطر الأول هنا\nوهذا هو السطر الثاني');
   });
 
   it('serializes cues into valid SRT format with sequential numbering', () => {
@@ -71,5 +99,14 @@ describe('Subtitle Engine - Validator', () => {
     const errors = validateCues(invalidCues);
     expect(errors.some((e) => e.type === 'invalid_duration')).toBe(true);
     expect(errors.some((e) => e.type === 'empty_text')).toBe(true);
+  });
+
+  it('detects out-of-bounds cues exceeding video duration', () => {
+    const cues: SubtitleCue[] = [
+      { id: '1', index: 1, startTime: 1000, endTime: 12000, text: 'تجاوز الفيديو' },
+    ];
+
+    const errors = validateCues(cues, 10000); // video duration is 10000ms
+    expect(errors.some((e) => e.type === 'exceeds_duration')).toBe(true);
   });
 });

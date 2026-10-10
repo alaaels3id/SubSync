@@ -56,7 +56,7 @@ export const useNotificationStore = create<NotificationState>((set) => ({
     }));
 
     // Trigger OS-level desktop notification via Electron / node-notifier
-    if (window.electronAPI?.showNotification) {
+    if (typeof window !== 'undefined' && window.electronAPI?.showNotification) {
       window.electronAPI.showNotification({
         title,
         message,
