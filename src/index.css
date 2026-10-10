@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(113, 62, 90, 0.25);
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(113, 62, 90, 0.45);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 109, 119, 0.6);
+}
+
+/* RTL Helpers */
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="ltr"] {
+  text-align: left;
+}
+
+/* Timeline Custom Styles */
+.timeline-grid-pattern {
+  background-size: 50px 100%;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+
+.light .timeline-grid-pattern {
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+}
+
+/* Prevent text drag when interacting with timeline blocks */
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}

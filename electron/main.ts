@@ -1,0 +1,174 @@
+import { app, BrowserWindow, ipcMain, dialog, protocol, net } from 'electron';
+import path from 'node:path';
+import fs from 'node:fs/promises';
+import { pathToFileURL } from 'node:url';
+
+// Register custom protocol for local video streaming with range request support
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'media-loader',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      corsEnabled: true,
+      stream: true,
+      bypassCSP: true,
+    },
+  },
+]);
+
+let mainWindow: BrowserWindow | null = null;
+
+// The built directory structure
+process.env.DIST = path.join(__dirname, '../dist');
+process.env.VITE_PUBLIC = app.isPackaged
+  ? process.env.DIST
+  : path.join(process.env.DIST, '../public');
+
+const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
+
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    title: 'SubSync Studio',
+    width: 1280,
+    height: 820,
+    minWidth: 1024,
+    minHeight: 700,
+    backgroundColor: '#111D4A', // Space Indigo
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.mjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false,
+    },
+  });
+
+  // Test active push message to Renderer-process.
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow?.webContents.send('main-process-message', (new Date()).toLocaleString());
+  });
+
+  if (VITE_DEV_SERVER_URL) {
+    mainWindow.loadURL(VITE_DEV_SERVER_URL);
+  } else {
+    mainWindow.loadFile(path.join(process.env.DIST || path.join(__dirname, '../dist'), 'index.html'));
+  }
+}
+
+// App lifecycle
+app.whenReady().then(() => {
+  // Register media-loader handler to safely stream local video files to HTML5 video tag
+  protocol.handle('media-loader', (request) => {
+    try {
+      const decodedUrl = decodeURIComponent(request.url);
+      const filePath = decodedUrl.replace('media-loader://', '');
+      return net.fetch(pathToFileURL(filePath).toString(), { bypassCustomProtocolHandlers: true });
+    } catch (err) {
+      console.error('Failed to stream media file:', err);
+      return new Response('Media file not found or inaccessible', { status: 404 });
+    }
+  });
+
+  // Native Open Video Dialog
+  ipcMain.handle('dialog:openVideo', async () => {
+    if (!mainWindow) return null;
+    const result = await dialog.showOpenDialog(mainWindow, {
+      title: 'اختر ملف الفيديو (Select Video File)',
+      properties: ['openFile'],
+      filters: [
+        { name: 'Video Files', extensions: ['mp4', 'mkv', 'webm', 'mov', 'avi'] },
+        { name: 'All Files', extensions: ['*'] },
+      ],
+    });
+
+    if (result.canceled || result.filePaths.length === 0) {
+      return null;
+    }
+
+    const filePath = result.filePaths[0];
+    const stats = await fs.stat(filePath);
+    const fileName = path.basename(filePath);
+
+    return {
+      filePath,
+      fileName,
+      size: stats.size,
+      mediaUrl: `media-loader://${encodeURIComponent(filePath)}`,
+    };
+  });
+
+  // Native Open SRT Dialog
+  ipcMain.handle('dialog:openSrt', async () => {
+    if (!mainWindow) return null;
+    const result = await dialog.showOpenDialog(mainWindow, {
+      title: 'استيراد ملف ترجمة (Import Subtitle)',
+      properties: ['openFile'],
+      filters: [
+        { name: 'SubRip Subtitle', extensions: ['srt'] },
+        { name: 'All Files', extensions: ['*'] },
+      ],
+    });
+
+    if (result.canceled || result.filePaths.length === 0) {
+      return null;
+    }
+
+    const filePath = result.filePaths[0];
+    const content = await fs.readFile(filePath, 'utf-8');
+    const fileName = path.basename(filePath);
+
+    return {
+      filePath,
+      fileName,
+      content,
+    };
+  });
+
+  // Native Save SRT Dialog
+  ipcMain.handle('dialog:saveSrt', async (_, { content, defaultName }: { content: string; defaultName?: string }) => {
+    if (!mainWindow) return { success: false };
+    const result = await dialog.showSaveDialog(mainWindow, {
+      title: 'تصدير ملف الترجمة (Export Subtitle)',
+      defaultPath: defaultName || 'subtitles.srt',
+      filters: [{ name: 'SubRip Subtitle', extensions: ['srt'] }],
+    });
+
+    if (result.canceled || !result.filePath) {
+      return { success: false, canceled: true };
+    }
+
+    await fs.writeFile(result.filePath, content, 'utf-8');
+    return { success: true, filePath: result.filePath };
+  });
+
+  // File system utilities
+  ipcMain.handle('fs:readFile', async (_, filePath: string) => {
+    return await fs.readFile(filePath, 'utf-8');
+  });
+
+  ipcMain.handle('fs:writeFile', async (_, { filePath, content }: { filePath: string; content: string }) => {
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
+    await fs.writeFile(filePath, content, 'utf-8');
+    return true;
+  });
+
+  // App version
+  ipcMain.handle('app:getVersion', () => {
+    return app.getVersion();
+  });
+
+  createWindow();
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
