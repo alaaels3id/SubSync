@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Header } from '@/components/layout/Header';
 import { VideoPlayer } from '@/components/player/VideoPlayer';
 import { SubtitleTable } from '@/components/editor/SubtitleTable';
@@ -34,6 +34,73 @@ export const App: React.FC = () => {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isNewProjectOpen, setIsNewProjectOpen] = useState(false);
+
+  // Split pane resizing state (Video Player vs Subtitle Table)
+  const [splitRatio, setSplitRatio] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('subsync_workspace_split_ratio');
+      if (saved) {
+        const parsed = parseFloat(saved);
+        if (!isNaN(parsed) && parsed >= 20 && parsed <= 75) {
+          return parsed;
+        }
+      }
+    } catch {
+      // fallback
+    }
+    return 42; // default: 42% video player, 58% subtitle table
+  });
+  const [isResizing, setIsResizing] = useState(false);
+  const splitContainerRef = useRef<HTMLDivElement>(null);
+
+  // Drag handler for split pane
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!splitContainerRef.current) return;
+      const rect = splitContainerRef.current.getBoundingClientRect();
+      const isRtl = document.documentElement.dir === 'rtl';
+
+      let newPercent: number;
+      if (isRtl) {
+        // In RTL, Video Player (first flex item) is on the right
+        newPercent = ((rect.right - e.clientX) / rect.width) * 100;
+      } else {
+        // In LTR, Video Player (first flex item) is on the left
+        newPercent = ((e.clientX - rect.left) / rect.width) * 100;
+      }
+
+      // Clamp between 20% and 75%
+      const clamped = Math.min(75, Math.max(20, newPercent));
+      setSplitRatio(clamped);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      setSplitRatio((current) => {
+        try {
+          localStorage.setItem('subsync_workspace_split_ratio', current.toString());
+        } catch {}
+        return current;
+      });
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
 
   // Apply theme and direction on load and changes
   useEffect(() => {
@@ -209,16 +276,57 @@ export const App: React.FC = () => {
 
       {/* Main Workspace (Top Split View: Video Player + Line Editor Table) */}
       <main className="flex-1 min-h-0 flex flex-col p-2 gap-2">
-        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-2">
-          {/* Video Player Panel (5 cols) */}
-          <div className="lg:col-span-5 h-full flex flex-col min-h-0">
+        <div
+          ref={splitContainerRef}
+          className="flex-1 min-h-0 flex flex-row items-stretch select-none relative"
+        >
+          {/* Video Player Panel */}
+          <div
+            style={{ width: `calc(${splitRatio}% - 6px)` }}
+            className="h-full flex flex-col min-h-0 overflow-hidden shrink-0"
+          >
             <VideoPlayer onOpenVideoFile={handleOpenVideo} />
           </div>
 
-          {/* Subtitle Table Editor Panel (7 cols) */}
-          <div className="lg:col-span-7 h-full flex flex-col min-h-0">
+          {/* Draggable Split Divider Gutter */}
+          <div
+            onMouseDown={(e) => {
+              e.preventDefault();
+              setIsResizing(true);
+            }}
+            onDoubleClick={() => {
+              setSplitRatio(42);
+              try {
+                localStorage.setItem('subsync_workspace_split_ratio', '42');
+              } catch {}
+            }}
+            title={t('common.resizeSplit')}
+            className={`w-3 -mx-0.5 z-20 flex items-center justify-center cursor-col-resize group shrink-0 select-none relative transition-colors ${
+              isResizing ? 'cursor-col-resize' : ''
+            }`}
+          >
+            {/* Visual Divider Line / Pill */}
+            <div
+              className={`w-1 rounded-full transition-all duration-150 ${
+                isResizing
+                  ? 'bg-brand-teal h-16 w-1.5 shadow-[0_0_12px_rgba(0,109,119,0.8)]'
+                  : 'bg-slate-300 dark:bg-slate-700/80 group-hover:bg-brand-teal group-hover:h-12 group-hover:w-1.5 group-hover:shadow-[0_0_8px_rgba(0,109,119,0.5)] h-8'
+              }`}
+            />
+          </div>
+
+          {/* Subtitle Table Editor Panel */}
+          <div
+            style={{ width: `calc(${100 - splitRatio}% - 6px)` }}
+            className="h-full flex flex-col min-h-0 overflow-hidden flex-1"
+          >
             <SubtitleTable />
           </div>
+
+          {/* Fullscreen drag overlay to prevent iframe/video event capturing */}
+          {isResizing && (
+            <div className="fixed inset-0 z-50 cursor-col-resize select-none pointer-events-auto bg-transparent" />
+          )}
         </div>
 
         {/* Bottom Interactive Timeline & Waveform (Height: ~180px) */}

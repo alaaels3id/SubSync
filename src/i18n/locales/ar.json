@@ -13,7 +13,8 @@
     "english": "English",
     "dark": "داكن",
     "light": "فاتح",
-    "system": "النظام"
+    "system": "النظام",
+    "resizeSplit": "اسحب لتعديل العرض، انقر نقراً مزدوجاً للاستعادة"
   },
   "header": {
     "newProject": "مشروع جديد",

@@ -13,7 +13,8 @@
     "english": "English",
     "dark": "Dark",
     "light": "Light",
-    "system": "System"
+    "system": "System",
+    "resizeSplit": "Drag to resize, double-click to reset"
   },
   "header": {
     "newProject": "New Project",

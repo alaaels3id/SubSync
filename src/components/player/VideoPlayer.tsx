@@ -166,12 +166,12 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`relative flex flex-col bg-slate-950 rounded-xl overflow-hidden border transition-all ${
+      className={`relative flex flex-col h-full bg-slate-950 rounded-xl overflow-hidden border transition-all ${
         isDraggingOver ? 'border-brand-apricot ring-2 ring-brand-apricot/40' : 'border-slate-800'
       }`}
     >
       {/* Video Canvas / Display Area */}
-      <div className="relative flex-1 min-h-[260px] max-h-[440px] flex items-center justify-center bg-black overflow-hidden group">
+      <div className="relative flex-1 min-h-0 flex items-center justify-center bg-black overflow-hidden group">
         {videoSource ? (
           <video
             ref={videoRef}
