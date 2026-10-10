@@ -50,22 +50,7 @@ const DEFAULT_TRACK: SubtitleTrack = {
   id: 'track-ar',
   language: 'ar',
   label: 'العربية (Arabic)',
-  cues: [
-    {
-      id: 'cue-init-1',
-      index: 1,
-      startTime: 1000,
-      endTime: 4000,
-      text: 'مرحبًا بك في SubSync Studio.',
-    },
-    {
-      id: 'cue-init-2',
-      index: 2,
-      startTime: 4500,
-      endTime: 7500,
-      text: 'ابدأ بمزامنة الترجمة بدقة وسهولة مع الفيديو.',
-    },
-  ],
+  cues: [],
 };
 
 const renumberCues = (cues: SubtitleCue[]): SubtitleCue[] => {
@@ -80,7 +65,7 @@ const renumberCues = (cues: SubtitleCue[]): SubtitleCue[] => {
 export const useSubtitlesStore = create<SubtitlesState>((set, get) => ({
   tracks: [DEFAULT_TRACK],
   activeTrackId: 'track-ar',
-  selectedCueIds: ['cue-init-1'],
+  selectedCueIds: [],
   activeCueId: null,
   history: [],
   future: [],
