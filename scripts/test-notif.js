@@ -5,13 +5,14 @@ import path from 'node:path';
 app.whenReady().then(() => {
   console.log('Testing notification on macOS with custom icon...');
 
-  const iconPath = path.resolve('build/icon.png');
+  const iconPath = path.resolve('public/icon.png');
 
   if (Notification.isSupported()) {
     try {
       const notification = new Notification({
-        title: 'تيوب فلو - TubeFlow',
+        title: 'SubSync Studio',
         body: 'هذا إشعار تجريبي بشعار التطبيق المخصص',
+        icon: iconPath,
         silent: false
       });
       notification.show();
@@ -23,8 +24,8 @@ app.whenReady().then(() => {
   if (process.platform === 'darwin') {
     notifier.notify(
       {
-        title: 'تيوب فلو - TubeFlow',
-        message: 'هذا إشعار تجريبي بشعار التطبيق المخصص 🌊',
+        title: 'SubSync Studio',
+        message: 'هذا إشعار تجريبي بشعار التطبيق المخصص 🎬',
         icon: iconPath,
         contentImage: iconPath,
         sound: true,

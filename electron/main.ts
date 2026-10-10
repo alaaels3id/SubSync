@@ -1,4 +1,5 @@
-import { app, BrowserWindow, ipcMain, dialog, protocol, net, nativeImage } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, protocol, net, nativeImage, Notification } from 'electron';
+import notifier from 'node-notifier';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import fsSync from 'node:fs';
@@ -64,6 +65,49 @@ function createWindow() {
     mainWindow.loadURL(VITE_DEV_SERVER_URL);
   } else {
     mainWindow.loadFile(path.join(process.env.DIST || path.join(__dirname, '../dist'), 'index.html'));
+  }
+}
+
+/**
+ * Display native desktop notification using both Electron Notification API
+ * and node-notifier fallback (ensuring custom icon displays on macOS in dev & prod).
+ */
+export function showNativeNotification(title: string, message: string, sound = true) {
+  const publicDir = process.env.VITE_PUBLIC || path.join(__dirname, '../public');
+  const iconPath = path.resolve(publicDir, 'icon.png');
+
+  if (Notification.isSupported()) {
+    try {
+      const notification = new Notification({
+        title,
+        body: message,
+        icon: fsSync.existsSync(iconPath) ? iconPath : undefined,
+        silent: !sound,
+      });
+      notification.show();
+    } catch (e) {
+      console.warn('Native notification failed:', e);
+    }
+  }
+
+  if (process.platform === 'darwin') {
+    try {
+      notifier.notify(
+        {
+          title,
+          message,
+          icon: iconPath,
+          contentImage: iconPath,
+          sound,
+          wait: false,
+        },
+        (err) => {
+          if (err) console.warn('Notifier error:', err);
+        }
+      );
+    } catch (err) {
+      console.warn('node-notifier failed:', err);
+    }
   }
 }
 
@@ -167,6 +211,12 @@ app.whenReady().then(() => {
   // App version
   ipcMain.handle('app:getVersion', () => {
     return app.getVersion();
+  });
+
+  // Native notification handler (FR-023, test-notif support)
+  ipcMain.handle('notification:show', (_, { title, message, sound }: { title: string; message: string; sound?: boolean }) => {
+    showNativeNotification(title, message, sound ?? true);
+    return true;
   });
 
   // Set macOS dock icon

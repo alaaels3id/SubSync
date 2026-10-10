@@ -55,6 +55,15 @@ export const useNotificationStore = create<NotificationState>((set) => ({
       toasts: [...state.toasts, newNotif],
     }));
 
+    // Trigger OS-level desktop notification via Electron / node-notifier
+    if (window.electronAPI?.showNotification) {
+      window.electronAPI.showNotification({
+        title,
+        message,
+        sound: type !== 'info',
+      }).catch((err) => console.warn('Native notification error:', err));
+    }
+
     // Auto dismiss toast after 4.5 seconds
     setTimeout(() => {
       set((state) => ({
