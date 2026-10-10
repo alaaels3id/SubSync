@@ -1,17 +1,28 @@
-import { app, BrowserWindow, ipcMain, dialog, protocol, net, nativeImage, Notification, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, protocol, net, nativeImage } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import fsSync from 'node:fs';
-import { execFile } from 'node:child_process';
 import { pathToFileURL, fileURLToPath } from 'node:url';
+import { setupNotifications, showNativeNotification } from './notifications/notificationManager';
+
+export { showNativeNotification };
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Set Application name & Model ID for native notifications
-app.setName('SubSync Studio');
-if (process.platform === 'win32') {
-  app.setAppUserModelId('com.subsync.studio');
-}
+// The built directory structure
+process.env.DIST = path.join(__dirname, '../dist');
+process.env.VITE_PUBLIC = app.isPackaged
+  ? process.env.DIST
+  : path.join(process.env.DIST, '../public');
+
+// Initialize Cross-Platform Desktop & Push Notification Manager
+const publicDir = process.env.VITE_PUBLIC || path.join(__dirname, '../public');
+setupNotifications({
+  appName: 'SubSync Studio',
+  appId: 'com.subsync.studio',
+  defaultIconPath: path.join(publicDir, 'icon.png'),
+  debug: !app.isPackaged,
+});
 
 // Register custom protocol for local video streaming with range request support
 protocol.registerSchemesAsPrivileged([
@@ -29,12 +40,6 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 let mainWindow: BrowserWindow | null = null;
-
-// The built directory structure
-process.env.DIST = path.join(__dirname, '../dist');
-process.env.VITE_PUBLIC = app.isPackaged
-  ? process.env.DIST
-  : path.join(process.env.DIST, '../public');
 
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
 
@@ -71,53 +76,6 @@ function createWindow() {
     mainWindow.loadURL(VITE_DEV_SERVER_URL);
   } else {
     mainWindow.loadFile(path.join(process.env.DIST || path.join(__dirname, '../dist'), 'index.html'));
-  }
-}
-
-/**
- * Display native desktop notification using Electron's Notification API
- * with the custom app icon and sound.
- */
-export function showNativeNotification(title: string, message: string, sound = true) {
-  const publicDir = process.env.VITE_PUBLIC || path.join(__dirname, '../public');
-  const iconPath = path.resolve(publicDir, 'icon.png');
-  const icon = fsSync.existsSync(iconPath) ? nativeImage.createFromPath(iconPath) : undefined;
-
-  // 1. Electron Native Notification (Standard for packaged apps & Windows/Linux)
-  if (Notification.isSupported()) {
-    try {
-      const notification = new Notification({
-        title: title || 'SubSync Studio',
-        body: message,
-        icon: process.platform !== 'darwin' ? icon : undefined, // macOS handles icon via app bundle
-        silent: !sound,
-      });
-      notification.show();
-    } catch (e) {
-      console.warn('Native notification error:', e);
-    }
-  }
-
-  // 2. Guaranteed macOS Notification Banner via AppleScript
-  // Electron unsigned binaries in dev mode on macOS are suppressed by Notification Center.
-  // osascript guarantees a real native banner with chime sound on macOS.
-  if (process.platform === 'darwin') {
-    try {
-      const cleanMsg = (message || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-      const cleanTitle = (title || 'SubSync Studio').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-      const soundClause = sound ? ' sound name "default"' : '';
-      execFile(
-        'osascript',
-        ['-e', `display notification "${cleanMsg}" with title "${cleanTitle}"${soundClause}`],
-        (err) => {
-          if (err) {
-            console.warn('macOS osascript notification error:', err);
-          }
-        }
-      );
-    } catch (e) {
-      console.warn('Failed to dispatch macOS notification via osascript:', e);
-    }
   }
 }
 
@@ -221,27 +179,6 @@ app.whenReady().then(() => {
   // App version
   ipcMain.handle('app:getVersion', () => {
     return app.getVersion();
-  });
-
-  // Native notification handler (FR-023, test-notif support)
-  ipcMain.handle('notification:show', (_, { title, message, sound }: { title: string; message: string; sound?: boolean }) => {
-    showNativeNotification(title, message, sound ?? true);
-    return true;
-  });
-
-  // Open OS system notification preferences
-  ipcMain.handle('settings:openNotifications', async () => {
-    try {
-      if (process.platform === 'darwin') {
-        await shell.openExternal('x-apple.systempreferences:com.apple.preference.notifications');
-      } else if (process.platform === 'win32') {
-        await shell.openExternal('ms-settings:notifications');
-      }
-      return true;
-    } catch (e) {
-      console.warn('Failed to open system notification settings:', e);
-      return false;
-    }
   });
 
   // Set macOS dock icon

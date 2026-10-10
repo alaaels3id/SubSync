@@ -27,6 +27,8 @@ export interface ElectronAPI {
     title: string;
     message: string;
     sound?: boolean;
+    iconPath?: string;
+    urgency?: 'normal' | 'critical' | 'low';
   }) => Promise<boolean>;
   openSystemNotificationSettings: () => Promise<boolean>;
 }
