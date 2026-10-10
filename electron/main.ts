@@ -1,7 +1,10 @@
 import { app, BrowserWindow, ipcMain, dialog, protocol, net } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import { pathToFileURL } from 'node:url';
+import fsSync from 'node:fs';
+import { pathToFileURL, fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Register custom protocol for local video streaming with range request support
 protocol.registerSchemesAsPrivileged([
@@ -29,6 +32,10 @@ process.env.VITE_PUBLIC = app.isPackaged
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL'];
 
 function createWindow() {
+  const preloadPath = fsSync.existsSync(path.join(__dirname, 'preload.mjs'))
+    ? path.join(__dirname, 'preload.mjs')
+    : path.join(__dirname, 'preload.js');
+
   mainWindow = new BrowserWindow({
     title: 'SubSync Studio',
     width: 1280,
@@ -37,7 +44,7 @@ function createWindow() {
     minHeight: 700,
     backgroundColor: '#111D4A', // Space Indigo
     webPreferences: {
-      preload: path.join(__dirname, 'preload.mjs'),
+      preload: preloadPath,
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
