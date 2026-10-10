@@ -8,35 +8,41 @@
       <stop offset="0%" stopColor="#006D77" stopOpacity="0.25" />
       <stop offset="100%" stopColor="#111D4A" stopOpacity="0.8" />
     </linearGradient>
+    <!-- macOS Dock Standard Ambient & Key Drop Shadow -->
+    <filter id="macShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#000000" flood-opacity="0.38" />
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.2" />
+    </filter>
     <filter id="softGlow" x="-10%" y="-10%" width="120%" height="120%">
       <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#006D77" flood-opacity="0.3" />
     </filter>
   </defs>
 
-  <!-- Base Icon Background (Space Indigo Squircle) -->
-  <rect width="512" height="512" rx="116" fill="url(#bgGrad)" />
-
-  <!-- Outer Film/Screen Border Frame -->
-  <rect x="64" y="64" width="384" height="384" rx="48" fill="url(#screenGrad)" stroke="#006D77" stroke-width="12" filter="url(#softGlow)" />
-
-  <!-- Film Strip Sprockets (Minimal, clean flat aesthetic) -->
-  <rect x="96" y="88" width="24" height="16" rx="6" fill="#006D77" opacity="0.8" />
-  <rect x="156" y="88" width="24" height="16" rx="6" fill="#006D77" opacity="0.8" />
-  <rect x="216" y="88" width="24" height="16" rx="6" fill="#006D77" opacity="0.8" />
-  <rect x="272" y="88" width="24" height="16" rx="6" fill="#006D77" opacity="0.8" />
-  <rect x="332" y="88" width="24" height="16" rx="6" fill="#006D77" opacity="0.8" />
-  <rect x="392" y="88" width="24" height="16" rx="6" fill="#006D77" opacity="0.8" />
-
-  <!-- Central Video Playhead Symbol (Apricot Cream & Stormy Teal) -->
-  <g transform="translate(256, 215)">
-    <!-- Play Triangle -->
-    <path d="M -30,-48 C -30,-54 -22,-58 -16,-54 L 46,-12 C 52,-8 52,2 46,6 L -16,48 C -22,52 -30,48 -30,42 Z" fill="#FFCF99" />
+  <!-- macOS HIG Standard Sized Squircle (412x412, centered with standard dock padding & shadow) -->
+  <g filter="url(#macShadow)">
+    <rect x="50" y="46" width="412" height="412" rx="92" fill="url(#bgGrad)" />
   </g>
 
-  <!-- Subtitle Lines (الترجمة - Iconic Dual Caption Bars) -->
-  <!-- Line 1: Primary Subtitle Bar (Floral White) -->
-  <rect x="116" y="324" width="280" height="26" rx="13" fill="#FFF8F0" />
-  
-  <!-- Line 2: Secondary Centered Subtitle Bar (Apricot Cream) -->
-  <rect x="166" y="366" width="180" height="22" rx="11" fill="#FFCF99" />
+  <!-- Inner Artwork Scaled & Centered (Scale factor 0.805) -->
+  <g transform="translate(256, 252) scale(0.805) translate(-256, -256)">
+    <!-- Outer Film/Screen Border Frame -->
+    <rect x="64" y="64" width="384" height="384" rx="48" fill="url(#screenGrad)" stroke="#006D77" stroke-width="12" filter="url(#softGlow)" />
+
+    <!-- Film Strip Sprockets -->
+    <rect x="96" y="88" width="24" height="16" rx="6" fill="#006D77" opacity="0.8" />
+    <rect x="156" y="88" width="24" height="16" rx="6" fill="#006D77" opacity="0.8" />
+    <rect x="216" y="88" width="24" height="16" rx="6" fill="#006D77" opacity="0.8" />
+    <rect x="272" y="88" width="24" height="16" rx="6" fill="#006D77" opacity="0.8" />
+    <rect x="332" y="88" width="24" height="16" rx="6" fill="#006D77" opacity="0.8" />
+    <rect x="392" y="88" width="24" height="16" rx="6" fill="#006D77" opacity="0.8" />
+
+    <!-- Central Video Playhead Symbol -->
+    <g transform="translate(256, 215)">
+      <path d="M -30,-48 C -30,-54 -22,-58 -16,-54 L 46,-12 C 52,-8 52,2 46,6 L -16,48 C -22,52 -30,48 -30,42 Z" fill="#FFCF99" />
+    </g>
+
+    <!-- Subtitle Lines -->
+    <rect x="116" y="324" width="280" height="26" rx="13" fill="#FFF8F0" />
+    <rect x="166" y="366" width="180" height="22" rx="11" fill="#FFCF99" />
+  </g>
 </svg>

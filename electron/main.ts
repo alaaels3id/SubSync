@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, protocol, net } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, protocol, net, nativeImage } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import fsSync from 'node:fs';
@@ -174,7 +174,10 @@ app.whenReady().then(() => {
     const publicDir = process.env.VITE_PUBLIC || path.join(__dirname, '../public');
     const dockIconPath = path.join(publicDir, 'icon.png');
     if (fsSync.existsSync(dockIconPath)) {
-      app.dock.setIcon(dockIconPath);
+      const img = nativeImage.createFromPath(dockIconPath);
+      if (!img.isEmpty()) {
+        app.dock.setIcon(img);
+      }
     }
   }
 
