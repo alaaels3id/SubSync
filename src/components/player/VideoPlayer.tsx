@@ -292,14 +292,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
       )}
 
       {/* Video Control Bar */}
-      <div className="h-12 bg-slate-900 border-t border-slate-800 px-4 flex items-center justify-between text-slate-200 select-none">
+      <div className="h-12 bg-slate-100 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 flex items-center justify-between text-slate-800 dark:text-slate-200 select-none transition-colors">
         {/* Playback Controls & Frame Stepping */}
         <div className="flex items-center gap-1.5">
           <button
             onClick={togglePlay}
             disabled={!videoSource}
             title={isPlaying ? (language === 'ar' ? 'إيقاف مؤقت (Space)' : 'Pause (Space)') : (language === 'ar' ? 'تشغيل (Space)' : 'Play (Space)')}
-            className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-200 hover:text-white disabled:opacity-40 transition"
+            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 transition"
           >
             {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
           </button>
@@ -309,7 +309,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
             onClick={() => seekRelative(-5000)}
             disabled={!videoSource}
             title={language === 'ar' ? 'تأخير 5 ثوانٍ (←)' : 'Seek -5s (←)'}
-            className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white disabled:opacity-40 transition"
+            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 transition"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
@@ -318,19 +318,19 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
             onClick={() => seekRelative(5000)}
             disabled={!videoSource}
             title={language === 'ar' ? 'تقديم 5 ثوانٍ (→)' : 'Seek +5s (→)'}
-            className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white disabled:opacity-40 transition"
+            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 transition"
           >
             <RotateCw className="w-3.5 h-3.5" />
           </button>
 
           {/* Frame Stepping (SYNC-07) */}
-          <div className="h-4 w-px bg-slate-800 mx-1" />
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
 
           <button
             onClick={() => stepFrames(-1)}
             disabled={!videoSource}
             title={language === 'ar' ? 'إطار للخلف (Frame Step Backward)' : 'Frame -1'}
-            className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white disabled:opacity-40 transition text-xs flex items-center"
+            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 transition text-xs flex items-center"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
           </button>
@@ -339,16 +339,16 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
             onClick={() => stepFrames(1)}
             disabled={!videoSource}
             title={language === 'ar' ? 'إطار للأمام (Frame Step Forward)' : 'Frame +1'}
-            className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white disabled:opacity-40 transition text-xs flex items-center"
+            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 transition text-xs flex items-center"
           >
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
 
           {/* Time Display */}
-          <div className="flex items-center gap-1.5 font-mono text-xs text-slate-300 px-2 py-0.5 rounded bg-slate-950/60 border border-slate-800 ml-1">
-            <span className="text-brand-apricot">{msToTimecode(currentTime)}</span>
-            <span className="text-slate-600">/</span>
-            <span className="text-slate-400">{duration > 0 ? msToTimecode(duration) : '00:00:00,000'}</span>
+          <div className="flex items-center gap-1.5 font-mono text-xs text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 ml-1 shadow-sm">
+            <span className="text-brand-teal dark:text-brand-apricot font-bold">{msToTimecode(currentTime)}</span>
+            <span className="text-slate-400 dark:text-slate-600">/</span>
+            <span className="text-slate-500 dark:text-slate-400">{duration > 0 ? msToTimecode(duration) : '00:00:00,000'}</span>
           </div>
         </div>
 
@@ -358,7 +358,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
           <select
             value={playbackRate}
             onChange={(e) => setPlaybackRate(parseFloat(e.target.value))}
-            className="bg-slate-800 border border-slate-700 text-[11px] text-slate-300 rounded px-1.5 py-0.5 focus:outline-none focus:border-brand-teal"
+            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-700 dark:text-slate-300 rounded px-1.5 py-0.5 focus:outline-none focus:border-brand-teal shadow-sm"
             title={language === 'ar' ? 'سرعة التشغيل' : 'Playback Speed'}
           >
             <option value="0.5">0.5x</option>
@@ -373,10 +373,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
           <div className="flex items-center gap-1.5">
             <button
               onClick={toggleMute}
-              className="p-1 text-slate-400 hover:text-white transition"
+              className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
               title={isMuted ? 'Unmute' : 'Mute'}
             >
-              {isMuted || volume === 0 ? <VolumeX className="w-3.5 h-3.5 text-rose-400" /> : <Volume2 className="w-3.5 h-3.5" />}
+              {isMuted || volume === 0 ? <VolumeX className="w-3.5 h-3.5 text-rose-500" /> : <Volume2 className="w-3.5 h-3.5" />}
             </button>
             <input
               type="range"
@@ -385,14 +385,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
               step="0.05"
               value={isMuted ? 0 : volume}
               onChange={(e) => setVolume(parseFloat(e.target.value))}
-              className="w-16 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-teal"
+              className="w-16 h-1 bg-slate-300 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-teal"
             />
           </div>
 
           {/* Fullscreen */}
           <button
             onClick={toggleFullscreen}
-            className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition"
+            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
             title={language === 'ar' ? 'ملء الشاشة' : 'Fullscreen'}
           >
             <Maximize2 className="w-3.5 h-3.5" />

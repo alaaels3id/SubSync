@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export type AppTheme = 'dark' | 'light' | 'system';
 export type AppLanguage = 'ar' | 'en';
@@ -25,43 +26,66 @@ interface SettingsState {
   updateSubtitlePreferences: (prefs: Partial<SubtitlePreferences>) => void;
 }
 
-export const useSettingsStore = create<SettingsState>((set) => ({
-  theme: 'dark', // Space Indigo dark theme as default
-  language: 'ar', // Arabic default with RTL
-  notificationsEnabled: true,
-  subtitlePreferences: {
-    fontSize: 24,
-    textColor: '#FFFFFF',
-    backgroundColor: '#000000',
-    backgroundOpacity: 0.65,
-    fontFamily: 'Tajawal, sans-serif',
-    textShadow: true,
-    position: 'bottom',
-  },
+export function applyThemeToDOM(theme: AppTheme) {
+  if (typeof document === 'undefined') return;
+  const isDark =
+    theme === 'dark' ||
+    (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
-  setTheme: (theme) => {
-    set({ theme });
-    // Update HTML class
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else if (theme === 'light') {
-      document.documentElement.classList.remove('dark');
-    } else {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.classList.toggle('dark', prefersDark);
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+}
+
+export const useSettingsStore = create<SettingsState>()(
+  persist(
+    (set) => ({
+      theme: 'dark', // Space Indigo dark theme as default
+      language: 'ar', // Arabic default with RTL
+      notificationsEnabled: true,
+      subtitlePreferences: {
+        fontSize: 24,
+        textColor: '#FFFFFF',
+        backgroundColor: '#000000',
+        backgroundOpacity: 0.65,
+        fontFamily: 'Tajawal, sans-serif',
+        textShadow: true,
+        position: 'bottom',
+      },
+
+      setTheme: (theme) => {
+        set({ theme });
+        applyThemeToDOM(theme);
+      },
+
+      setLanguage: (language) => {
+        set({ language });
+        if (typeof document !== 'undefined') {
+          document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
+          document.documentElement.setAttribute('lang', language);
+        }
+      },
+
+      setNotificationsEnabled: (enabled) => set({ notificationsEnabled: enabled }),
+
+      updateSubtitlePreferences: (prefs) =>
+        set((state) => ({
+          subtitlePreferences: { ...state.subtitlePreferences, ...prefs },
+        })),
+    }),
+    {
+      name: 'subsync_app_settings',
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          applyThemeToDOM(state.theme);
+          if (typeof document !== 'undefined') {
+            document.documentElement.setAttribute('dir', state.language === 'ar' ? 'rtl' : 'ltr');
+            document.documentElement.setAttribute('lang', state.language);
+          }
+        }
+      },
     }
-  },
-
-  setLanguage: (language) => {
-    set({ language });
-    document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
-    document.documentElement.setAttribute('lang', language);
-  },
-
-  setNotificationsEnabled: (enabled) => set({ notificationsEnabled: enabled }),
-
-  updateSubtitlePreferences: (prefs) =>
-    set((state) => ({
-      subtitlePreferences: { ...state.subtitlePreferences, ...prefs },
-    })),
-}));
+  )
+);

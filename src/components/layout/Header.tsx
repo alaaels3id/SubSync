@@ -42,41 +42,41 @@ export const Header: React.FC<HeaderProps> = ({
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <header className="h-14 bg-brand-indigo text-slate-100 flex items-center justify-between px-4 border-b border-brand-indigo-700/60 shadow-md select-none shrink-0 z-30">
+    <header className="h-14 bg-white dark:bg-brand-indigo text-slate-800 dark:text-slate-100 flex items-center justify-between px-4 border-b border-slate-200 dark:border-brand-indigo-700/60 shadow-sm select-none shrink-0 z-30 transition-colors">
       {/* Brand & Project Info */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 px-2.5 py-1 bg-brand-teal/20 border border-brand-teal/40 rounded-lg">
+        <div className="flex items-center gap-2 px-2.5 py-1 bg-brand-indigo text-white dark:bg-brand-teal/20 dark:border dark:border-brand-teal/40 rounded-lg shadow-sm">
           <Film className="w-5 h-5 text-brand-apricot" />
-          <span className="font-bold text-base tracking-wide text-white">
+          <span className="font-bold text-base tracking-wide">
             SubSync <span className="text-brand-apricot font-normal text-xs uppercase tracking-wider">Studio</span>
           </span>
         </div>
 
-        <div className="h-5 w-px bg-brand-indigo-700" />
+        <div className="h-5 w-px bg-slate-200 dark:bg-brand-indigo-700" />
 
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenNewProject}
             title={language === 'ar' ? 'مشروع جديد' : 'New Project'}
-            className="p-1.5 hover:bg-brand-indigo-700/70 rounded-md text-slate-300 hover:text-white transition"
+            className="p-1.5 hover:bg-slate-100 dark:hover:bg-brand-indigo-700/70 rounded-md text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition"
           >
             <Plus className="w-4 h-4" />
           </button>
 
-          <span className="text-sm font-medium text-slate-200 max-w-[180px] truncate" title={projectName}>
+          <span className="text-sm font-medium text-slate-800 dark:text-slate-200 max-w-[180px] truncate" title={projectName}>
             {projectName}
           </span>
 
           {isDirty ? (
             <span
-              className="text-[11px] px-2 py-0.5 rounded-full bg-brand-mauve/40 text-brand-apricot border border-brand-mauve/60"
+              className="text-[11px] px-2 py-0.5 rounded-full bg-brand-mauve/20 dark:bg-brand-mauve/40 text-brand-mauve dark:text-brand-apricot border border-brand-mauve/40 dark:border-brand-mauve/60"
               title={language === 'ar' ? 'تعديلات غير محفوظة' : 'Unsaved changes'}
             >
               ● {language === 'ar' ? 'معدل' : 'Modified'}
             </span>
           ) : (
             <span
-              className="flex items-center gap-1 text-[11px] text-emerald-400"
+              className="flex items-center gap-1 text-[11px] text-emerald-500 dark:text-emerald-400"
               title={language === 'ar' ? 'محفوظ' : 'Saved'}
             >
               <CheckCircle2 className="w-3 h-3" />
@@ -89,17 +89,17 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="flex items-center gap-2">
         <button
           onClick={onOpenVideo}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-indigo-700/80 hover:bg-brand-indigo-600 text-slate-100 text-xs font-medium rounded-lg border border-brand-indigo-600/50 transition shadow-sm"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-brand-indigo-700/80 dark:hover:bg-brand-indigo-600 dark:text-slate-100 text-xs font-medium rounded-lg border border-slate-200 dark:border-brand-indigo-600/50 transition shadow-sm"
         >
-          <FolderOpen className="w-3.5 h-3.5 text-brand-teal-300" />
+          <FolderOpen className="w-3.5 h-3.5 text-brand-teal" />
           <span>{language === 'ar' ? 'فتح فيديو' : 'Open Video'}</span>
         </button>
 
         <button
           onClick={onImportSrt}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-indigo-700/80 hover:bg-brand-indigo-600 text-slate-100 text-xs font-medium rounded-lg border border-brand-indigo-600/50 transition shadow-sm"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-brand-indigo-700/80 dark:hover:bg-brand-indigo-600 dark:text-slate-100 text-xs font-medium rounded-lg border border-slate-200 dark:border-brand-indigo-600/50 transition shadow-sm"
         >
-          <FileText className="w-3.5 h-3.5 text-brand-apricot" />
+          <FileText className="w-3.5 h-3.5 text-amber-500 dark:text-brand-apricot" />
           <span>{language === 'ar' ? 'استيراد SRT' : 'Import SRT'}</span>
         </button>
 
@@ -111,7 +111,7 @@ export const Header: React.FC<HeaderProps> = ({
           <span>{language === 'ar' ? 'تصدير SRT' : 'Export SRT'}</span>
         </button>
 
-        <div className="h-5 w-px bg-brand-indigo-700 mx-1" />
+        <div className="h-5 w-px bg-slate-200 dark:bg-brand-indigo-700 mx-1" />
 
         {/* Undo / Redo */}
         <div className="flex items-center gap-1">
@@ -121,8 +121,8 @@ export const Header: React.FC<HeaderProps> = ({
             title={language === 'ar' ? 'تراجع (Ctrl+Z)' : 'Undo (Ctrl+Z)'}
             className={`p-1.5 rounded-md transition ${
               canUndo()
-                ? 'text-slate-200 hover:bg-brand-indigo-700 hover:text-white'
-                : 'text-slate-500 cursor-not-allowed'
+                ? 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-brand-indigo-700 hover:text-slate-900 dark:hover:text-white'
+                : 'text-slate-400 dark:text-slate-500 cursor-not-allowed'
             }`}
           >
             <RotateCcw className="w-4 h-4" />
@@ -134,8 +134,8 @@ export const Header: React.FC<HeaderProps> = ({
             title={language === 'ar' ? 'إعادة (Ctrl+Y)' : 'Redo (Ctrl+Y)'}
             className={`p-1.5 rounded-md transition ${
               canRedo()
-                ? 'text-slate-200 hover:bg-brand-indigo-700 hover:text-white'
-                : 'text-slate-500 cursor-not-allowed'
+                ? 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-brand-indigo-700 hover:text-slate-900 dark:hover:text-white'
+                : 'text-slate-400 dark:text-slate-500 cursor-not-allowed'
             }`}
           >
             <RotateCw className="w-4 h-4" />
@@ -147,7 +147,7 @@ export const Header: React.FC<HeaderProps> = ({
           <select
             value={activeTrackId}
             onChange={(e) => setActiveTrack(e.target.value)}
-            className="bg-brand-indigo-900 border border-brand-indigo-700 text-xs text-slate-200 rounded-md px-2 py-1 focus:outline-none focus:border-brand-teal"
+            className="bg-slate-100 dark:bg-brand-indigo-900 border border-slate-300 dark:border-brand-indigo-700 text-xs text-slate-800 dark:text-slate-200 rounded-md px-2 py-1 focus:outline-none focus:border-brand-teal"
           >
             {tracks.map((track) => (
               <option key={track.id} value={track.id}>
@@ -160,7 +160,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Validation Errors Indicator */}
         {errors.length > 0 && (
           <div
-            className="flex items-center gap-1 px-2 py-1 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs cursor-pointer"
+            className="flex items-center gap-1 px-2 py-1 rounded bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-500/30 text-xs cursor-pointer"
             title={language === 'ar' ? `يوجد ${errors.length} تنبيه في التوقيت` : `${errors.length} timing issues`}
           >
             <AlertCircle className="w-3.5 h-3.5" />
@@ -173,23 +173,34 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="flex items-center gap-2">
         <button
           onClick={() => setLanguage(language === 'ar' ? 'en' : 'ar')}
-          className="text-xs px-2 py-1 rounded-md bg-brand-indigo-700/60 hover:bg-brand-indigo-700 text-slate-200 font-medium transition"
+          className="text-xs px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-brand-indigo-700/60 dark:hover:bg-brand-indigo-700 text-slate-700 dark:text-slate-200 font-medium transition"
           title={language === 'ar' ? 'التبديل إلى الإنجليزية' : 'Switch to Arabic'}
         >
           {language === 'ar' ? 'English' : 'عربي'}
         </button>
 
+        {/* Explicit Theme Toggle (Dark / Light) */}
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="p-1.5 rounded-md text-slate-300 hover:text-white hover:bg-brand-indigo-700 transition"
-          title={theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن'}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-brand-indigo-700/60 dark:hover:bg-brand-indigo-700 text-slate-700 dark:text-slate-200 text-xs font-medium transition"
+          title={theme === 'dark' ? (language === 'ar' ? 'التبديل إلى الوضع الفاتح' : 'Switch to Light Mode') : (language === 'ar' ? 'التبديل إلى الوضع الداكن' : 'Switch to Dark Mode')}
         >
-          {theme === 'dark' ? <Sun className="w-4 h-4 text-brand-apricot" /> : <Moon className="w-4 h-4" />}
+          {theme === 'dark' ? (
+            <>
+              <Moon className="w-3.5 h-3.5 text-brand-apricot" />
+              <span>{language === 'ar' ? 'داكن' : 'Dark'}</span>
+            </>
+          ) : (
+            <>
+              <Sun className="w-3.5 h-3.5 text-amber-500" />
+              <span>{language === 'ar' ? 'فاتح' : 'Light'}</span>
+            </>
+          )}
         </button>
 
         <button
           onClick={toggleOpen}
-          className="relative p-1.5 rounded-md text-slate-300 hover:text-white hover:bg-brand-indigo-700 transition"
+          className="relative p-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-brand-indigo-700 transition"
           title={language === 'ar' ? 'مركز الإشعارات' : 'Notification Center'}
         >
           <Bell className="w-4 h-4" />
@@ -202,7 +213,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           onClick={onOpenSettings}
-          className="p-1.5 rounded-md text-slate-300 hover:text-white hover:bg-brand-indigo-700 transition"
+          className="p-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-brand-indigo-700 transition"
           title={language === 'ar' ? 'الإعدادات' : 'Settings'}
         >
           <Settings className="w-4 h-4" />

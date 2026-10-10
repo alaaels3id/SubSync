@@ -11,7 +11,7 @@ import { ToastContainer } from '@/components/notifications/ToastContainer';
 import { usePlayerStore } from '@/stores/usePlayerStore';
 import { useSubtitlesStore } from '@/stores/useSubtitlesStore';
 import { useNotificationStore } from '@/stores/useNotificationStore';
-import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useSettingsStore, applyThemeToDOM } from '@/stores/useSettingsStore';
 import { parseSrt } from '@/core/srt';
 
 export const App: React.FC = () => {
@@ -33,12 +33,11 @@ export const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isNewProjectOpen, setIsNewProjectOpen] = useState(false);
 
-  // Apply dark mode on initial load
+  // Apply theme and direction on load and changes
   useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    }
+    applyThemeToDOM(theme);
     document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
+    document.documentElement.setAttribute('lang', language);
   }, [theme, language]);
 
   // Open Video Handler (Electron native dialog or file input fallback)
@@ -198,7 +197,7 @@ export const App: React.FC = () => {
   }, [handleKeyDown]);
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-brand-floral-200 dark:bg-brand-indigo-950 text-slate-900 dark:text-slate-100 font-sans overflow-hidden">
+    <div className="h-screen w-screen flex flex-col bg-slate-100 dark:bg-brand-indigo-950 text-slate-900 dark:text-slate-100 font-sans overflow-hidden transition-colors">
       {/* Top Header */}
       <Header
         onOpenVideo={handleOpenVideo}

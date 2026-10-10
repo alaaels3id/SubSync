@@ -172,39 +172,39 @@ export const Timeline: React.FC = () => {
   }, [effectiveDurationMs, pixelsPerSecond]);
 
   return (
-    <div className="flex flex-col h-full bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-inner select-none">
+    <div className="flex flex-col h-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-inner select-none transition-colors">
       {/* Timeline Controls Header */}
-      <div className="h-10 bg-slate-950/70 border-b border-slate-800 px-3 flex items-center justify-between shrink-0 text-xs">
+      <div className="h-10 bg-slate-50 dark:bg-slate-950/70 border-b border-slate-200 dark:border-slate-800 px-3 flex items-center justify-between shrink-0 text-xs">
         {/* Left: Quick Sync Tools */}
         <div className="flex items-center gap-2">
           {/* Global Offset buttons (SYNC-04) */}
-          <div className="flex items-center gap-1 bg-slate-900 rounded-lg p-0.5 border border-slate-800">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 rounded-lg p-0.5 border border-slate-200 dark:border-slate-800">
             <button
               onClick={() => shiftAllCues(-500)}
               title={language === 'ar' ? 'تأخير الكل بمقدار -500ms' : 'Global Offset -500ms'}
-              className="px-2 py-0.5 rounded text-[11px] text-slate-300 hover:text-white hover:bg-slate-800 transition"
+              className="px-2 py-0.5 rounded text-[11px] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition"
             >
               -500ms
             </button>
             <button
               onClick={() => shiftAllCues(-100)}
               title={language === 'ar' ? 'تأخير الكل بمقدار -100ms' : 'Global Offset -100ms'}
-              className="px-1.5 py-0.5 rounded text-[11px] text-slate-300 hover:text-white hover:bg-slate-800 transition"
+              className="px-1.5 py-0.5 rounded text-[11px] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition"
             >
               -100ms
             </button>
-            <span className="text-slate-600 px-0.5 text-[10px]">|</span>
+            <span className="text-slate-300 dark:text-slate-600 px-0.5 text-[10px]">|</span>
             <button
               onClick={() => shiftAllCues(100)}
               title={language === 'ar' ? 'تقديم الكل بمقدار +100ms' : 'Global Offset +100ms'}
-              className="px-1.5 py-0.5 rounded text-[11px] text-slate-300 hover:text-white hover:bg-slate-800 transition"
+              className="px-1.5 py-0.5 rounded text-[11px] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition"
             >
               +100ms
             </button>
             <button
               onClick={() => shiftAllCues(500)}
               title={language === 'ar' ? 'تقديم الكل بمقدار +500ms' : 'Global Offset +500ms'}
-              className="px-2 py-0.5 rounded text-[11px] text-slate-300 hover:text-white hover:bg-slate-800 transition"
+              className="px-2 py-0.5 rounded text-[11px] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition"
             >
               +500ms
             </button>
@@ -214,10 +214,10 @@ export const Timeline: React.FC = () => {
           {selectedCueIds.length > 0 && (
             <button
               onClick={() => snapCueToPlayhead(selectedCueIds[0], 'start', currentTime)}
-              className="flex items-center gap-1 px-2.5 py-1 bg-brand-teal/20 text-brand-teal-300 border border-brand-teal/40 rounded-lg hover:bg-brand-teal/30 transition text-xs"
+              className="flex items-center gap-1 px-2.5 py-1 bg-brand-teal/10 dark:bg-brand-teal/20 text-brand-teal dark:text-brand-teal-300 border border-brand-teal/30 dark:border-brand-teal/40 rounded-lg hover:bg-brand-teal/20 transition text-xs font-medium"
               title={language === 'ar' ? 'محاذاة بداية السطر مع المؤشر' : 'Snap start to playhead'}
             >
-              <Clock className="w-3.5 h-3.5 text-brand-apricot" />
+              <Clock className="w-3.5 h-3.5 text-brand-teal dark:text-brand-apricot" />
               <span>{language === 'ar' ? 'محاذاة للمؤشر' : 'Snap to Playhead'}</span>
             </button>
           )}
@@ -227,8 +227,8 @@ export const Timeline: React.FC = () => {
             onClick={() => setShowWaveform(!showWaveform)}
             className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-xs transition ${
               showWaveform
-                ? 'bg-brand-mauve/20 border-brand-mauve/40 text-brand-apricot'
-                : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+                ? 'bg-brand-mauve/15 dark:bg-brand-mauve/20 border-brand-mauve/30 dark:border-brand-mauve/40 text-brand-mauve dark:text-brand-apricot font-medium'
+                : 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
             }`}
             title={language === 'ar' ? 'إظهار / إخفاء الموجة الصوتية' : 'Toggle Audio Waveform'}
           >
@@ -241,7 +241,7 @@ export const Timeline: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setPixelsPerSecond((prev) => Math.max(20, prev - 15))}
-            className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-1 rounded text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition"
             title="Zoom Out"
           >
             <ZoomOut className="w-3.5 h-3.5" />
@@ -253,13 +253,13 @@ export const Timeline: React.FC = () => {
             max="200"
             value={pixelsPerSecond}
             onChange={(e) => setPixelsPerSecond(parseInt(e.target.value, 10))}
-            className="w-24 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-teal"
+            className="w-24 h-1 bg-slate-300 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-teal"
             title="Timeline Zoom"
           />
 
           <button
             onClick={() => setPixelsPerSecond((prev) => Math.min(220, prev + 15))}
-            className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-1 rounded text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition"
             title="Zoom In"
           >
             <ZoomIn className="w-3.5 h-3.5" />
@@ -270,7 +270,7 @@ export const Timeline: React.FC = () => {
       {/* Interactive Timeline Track Canvas Container */}
       <div
         ref={timelineContainerRef}
-        className="flex-1 overflow-x-auto overflow-y-hidden relative bg-slate-950 timeline-grid-pattern"
+        className="flex-1 overflow-x-auto overflow-y-hidden relative bg-slate-50 dark:bg-slate-950 timeline-grid-pattern"
       >
         <div
           ref={trackContainerRef}
@@ -279,7 +279,7 @@ export const Timeline: React.FC = () => {
           className="relative h-full flex flex-col cursor-pointer min-w-full"
         >
           {/* Time Ruler (Seconds markers) */}
-          <div className="h-6 bg-slate-900/90 border-b border-slate-800 relative shrink-0">
+          <div className="h-6 bg-slate-100/90 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 relative shrink-0">
             {rulerTicks.map((tick) => (
               <div
                 key={tick.sec}
@@ -288,11 +288,11 @@ export const Timeline: React.FC = () => {
               >
                 <div
                   className={`w-px ${
-                    tick.isMajor ? 'h-3.5 bg-slate-500' : 'h-2 bg-slate-700'
+                    tick.isMajor ? 'h-3.5 bg-slate-400 dark:bg-slate-500' : 'h-2 bg-slate-300 dark:bg-slate-700'
                   }`}
                 />
                 {tick.isMajor && (
-                  <span className="absolute left-1 top-0.5 text-[9px] font-mono text-slate-400 select-none">
+                  <span className="absolute left-1 top-0.5 text-[9px] font-mono text-slate-600 dark:text-slate-400 select-none">
                     {tick.label}
                   </span>
                 )}
@@ -302,7 +302,7 @@ export const Timeline: React.FC = () => {
 
           {/* Audio Waveform Background Visualizer (SYNC-06) */}
           {showWaveform && (
-            <div className="h-12 bg-brand-indigo-950/60 border-b border-slate-800/80 relative flex items-center overflow-hidden opacity-75">
+            <div className="h-12 bg-slate-100/70 dark:bg-brand-indigo-950/60 border-b border-slate-200 dark:border-slate-800/80 relative flex items-center overflow-hidden opacity-80">
               {/* Synthetic audio waveform bars based on timeline width */}
               <svg className="w-full h-full" preserveAspectRatio="none">
                 <defs>
