@@ -119,9 +119,7 @@ export class NotificationManager {
           body: resolvedMessage,
           silent: !sound,
           urgency,
-          // NOTE: On macOS, passing icon to new Notification causes it to be ignored
-          // or silently dropped because macOS uses the application bundle icon.
-          icon: process.platform !== 'darwin' ? iconObj : undefined,
+          icon: iconObj,
         };
 
         const notification = new Notification(notifOptions);
@@ -136,11 +134,9 @@ export class NotificationManager {
       }
     }
 
-    // 2. Guaranteed macOS Desktop Banner via AppleScript (osascript)
-    // In macOS development mode (or when running an unsigned Electron binary),
-    // macOS Notification Center suppresses banners for the unsigned bundle.
-    // osascript guarantees a real native banner with chime sound on macOS.
-    if (process.platform === 'darwin') {
+    // 2. macOS Desktop Banner Fallback via AppleScript (osascript)
+    // Only used as fallback if native Notification was suppressed or failed.
+    if (process.platform === 'darwin' && !electronNotificationShown) {
       try {
         const cleanMsg = resolvedMessage.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
         const cleanTitle = resolvedTitle.replace(/\\/g, '\\\\').replace(/"/g, '\\"');

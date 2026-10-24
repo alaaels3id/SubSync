@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 
 export interface VideoSource {
-  type: 'local' | 'url';
+  type: 'local' | 'url' | 'youtube';
   url: string;
   name: string;
   path?: string;
   size?: number;
+  youtubeId?: string;
+  thumbnail?: string;
 }
 
 interface PlayerState {

@@ -35,10 +35,11 @@
     "noVideoTitle": "No Video Loaded",
     "noVideoDesc": "Drag and drop a video file here, or select from your computer or stream URL.",
     "chooseLocal": "Choose Local File",
-    "directUrl": "Direct Media URL",
-    "directUrlTitle": "Play from Direct Media URL",
-    "directUrlDesc": "Enter a direct playable media link (MP4, WebM). Webpages & DRM streams are not supported.",
-    "directUrlPlaceholder": "https://example.com/video.mp4",
+    "directUrl": "Direct URL or YouTube",
+    "directUrlTitle": "Play from Direct URL or YouTube",
+    "directUrlDesc": "Enter a direct video file link (MP4, WebM) or a YouTube video link.",
+    "directUrlPlaceholder": "https://www.youtube.com/watch?v=... or direct .mp4 link",
+    "loadingVideo": "Loading...",
     "loadVideo": "Load Video",
     "play": "Play (Space)",
     "pause": "Pause (Space)",
@@ -158,9 +159,12 @@
     "welcomeTitle": "Welcome to SubSync Studio",
     "welcomeMessage": "Workspace initialized successfully. You can import a video or start a new project.",
     "videoLoaded": "Video Loaded Successfully",
+    "youtubeLoaded": "YouTube Video Loaded Successfully",
     "srtImported": "SRT Imported Successfully",
     "errorTitle": "Error",
     "failedToOpenVideo": "Failed to open video file",
+    "failedToLoadYoutube": "Failed to load YouTube video. Please verify the URL or embedding permissions",
+    "failedToPlayVideo": "Unable to play video. Please ensure the link is a valid direct video source",
     "failedToImportSrt": "Failed to import SRT file"
   }
 }

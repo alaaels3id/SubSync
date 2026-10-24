@@ -11,13 +11,17 @@ import {
   Maximize2,
   Video,
   Link as LinkIcon,
-  Upload
+  Upload,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { usePlayerStore } from '@/stores/usePlayerStore';
 import { useSubtitlesStore } from '@/stores/useSubtitlesStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useNotificationStore } from '@/stores/useNotificationStore';
 import { msToTimecode } from '@/core/srt';
+import { extractYouTubeVideoId, fetchYouTubeMetadata, loadYouTubeIframeApi } from '@/core/utils/youtube';
 
 interface VideoPlayerProps {
   onOpenVideoFile: () => void;
@@ -27,6 +31,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
   const { t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const ytPlayerRef = useRef<any>(null);
 
   const {
     videoSource,
@@ -50,13 +55,153 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
 
   const { tracks, activeTrackId } = useSubtitlesStore();
   const { subtitlePreferences } = useSettingsStore();
+  const { addNotification } = useNotificationStore();
 
   const [showUrlDialog, setShowUrlDialog] = useState(false);
   const [urlInput, setUrlInput] = useState('');
+  const [isLoadingUrl, setIsLoadingUrl] = useState(false);
+  const [isYtReady, setIsYtReady] = useState(false);
+  const [playbackError, setPlaybackError] = useState<string | null>(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
-  // Sync isPlaying with videoRef
+  // Initialize YouTube Player when videoSource is of type 'youtube'
   useEffect(() => {
+    if (videoSource?.type !== 'youtube' || !videoSource.youtubeId) {
+      if (ytPlayerRef.current) {
+        try {
+          ytPlayerRef.current.destroy?.();
+        } catch (e) {
+          console.warn('Error destroying YT player:', e);
+        }
+        ytPlayerRef.current = null;
+        setIsYtReady(false);
+      }
+      return;
+    }
+
+    let isMounted = true;
+    setPlaybackError(null);
+    setIsYtReady(false);
+
+    loadYouTubeIframeApi().then(() => {
+      if (!isMounted) return;
+
+      const container = document.getElementById('subsync-yt-player');
+      if (!container || !(window as any).YT || !(window as any).YT.Player) return;
+
+      if (ytPlayerRef.current) {
+        try {
+          ytPlayerRef.current.destroy?.();
+        } catch {
+          // ignore
+        }
+        ytPlayerRef.current = null;
+      }
+
+      try {
+        const origin = window.location.origin.startsWith('http')
+          ? window.location.origin
+          : 'https://www.youtube.com';
+
+        const player = new (window as any).YT.Player('subsync-yt-player', {
+          videoId: videoSource.youtubeId,
+          playerVars: {
+            autoplay: 0,
+            controls: 1,
+            modestbranding: 1,
+            rel: 0,
+            playsinline: 1,
+            origin,
+          },
+          events: {
+            onReady: (event: any) => {
+              if (!isMounted) return;
+              setIsYtReady(true);
+              const durSec = event.target.getDuration();
+              if (durSec && durSec > 0) {
+                setDuration(Math.floor(durSec * 1000));
+              }
+              try {
+                event.target.setPlaybackRate?.(playbackRate);
+                event.target.setVolume?.(isMuted ? 0 : Math.round(volume * 100));
+              } catch {
+                // ignore
+              }
+            },
+            onStateChange: (event: any) => {
+              if (!isMounted) return;
+              const YTState = (window as any).YT?.PlayerState;
+              if (event.data === (YTState?.PLAYING ?? 1)) {
+                setIsPlaying(true);
+              } else if (
+                event.data === (YTState?.PAUSED ?? 2) ||
+                event.data === (YTState?.ENDED ?? 0)
+              ) {
+                setIsPlaying(false);
+              }
+            },
+            onError: (event: any) => {
+              if (!isMounted) return;
+              console.error('YouTube Player Error:', event.data);
+              const errMsg = t('notifications.failedToLoadYoutube');
+              setPlaybackError(errMsg);
+              addNotification('error', t('notifications.errorTitle'), errMsg);
+            },
+          },
+        });
+
+        ytPlayerRef.current = player;
+      } catch (err) {
+        console.error('Failed to initialize YouTube Player:', err);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [videoSource?.type, videoSource?.youtubeId]);
+
+  // YouTube polling time update during playback
+  useEffect(() => {
+    if (videoSource?.type !== 'youtube' || !isPlaying || !isYtReady) return;
+
+    const interval = setInterval(() => {
+      try {
+        if (ytPlayerRef.current?.getCurrentTime) {
+          const sec = ytPlayerRef.current.getCurrentTime();
+          if (typeof sec === 'number' && !isNaN(sec)) {
+            const timeMs = Math.floor(sec * 1000);
+            if (Math.abs(currentTime - timeMs) > 30) {
+              setCurrentTime(timeMs);
+            }
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [videoSource?.type, isPlaying, isYtReady, currentTime, setCurrentTime]);
+
+  // Sync isPlaying with videoRef or YouTube Player
+  useEffect(() => {
+    if (videoSource?.type === 'youtube') {
+      if (!ytPlayerRef.current || !isYtReady) return;
+      try {
+        const playerState = ytPlayerRef.current.getPlayerState?.();
+        const isCurrentlyPlaying = playerState === 1;
+        if (isPlaying && !isCurrentlyPlaying) {
+          ytPlayerRef.current.playVideo?.();
+        } else if (!isPlaying && isCurrentlyPlaying) {
+          ytPlayerRef.current.pauseVideo?.();
+        }
+      } catch (err) {
+        console.warn('YT Play/Pause error:', err);
+      }
+      return;
+    }
+
     if (!videoRef.current) return;
     if (isPlaying && videoRef.current.paused) {
       videoRef.current.play().catch((err: unknown) => {
@@ -66,27 +211,71 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
     } else if (!isPlaying && !videoRef.current.paused) {
       videoRef.current.pause();
     }
-  }, [isPlaying, setIsPlaying]);
+  }, [isPlaying, isYtReady, videoSource?.type, setIsPlaying]);
 
-  // Sync playbackRate with videoRef
+  // Sync external seek (e.g. from timeline or table) to videoRef or YouTube Player
   useEffect(() => {
+    if (videoSource?.type === 'youtube') {
+      if (!ytPlayerRef.current || !isYtReady || !ytPlayerRef.current.getCurrentTime) return;
+      try {
+        const ytCurrentMs = Math.floor(ytPlayerRef.current.getCurrentTime() * 1000);
+        if (Math.abs(ytCurrentMs - currentTime) > 300) {
+          ytPlayerRef.current.seekTo?.(currentTime / 1000, true);
+        }
+      } catch {
+        // ignore
+      }
+      return;
+    }
+
+    if (!videoRef.current) return;
+    const videoCurrentMs = Math.floor(videoRef.current.currentTime * 1000);
+    if (Math.abs(videoCurrentMs - currentTime) > 250) {
+      videoRef.current.currentTime = currentTime / 1000;
+    }
+  }, [currentTime, isYtReady, videoSource?.type]);
+
+  // Sync playbackRate with videoRef or YouTube
+  useEffect(() => {
+    if (videoSource?.type === 'youtube') {
+      try {
+        ytPlayerRef.current?.setPlaybackRate?.(playbackRate);
+      } catch {
+        // ignore
+      }
+      return;
+    }
+
     if (videoRef.current) {
       videoRef.current.playbackRate = playbackRate;
     }
-  }, [playbackRate]);
+  }, [playbackRate, videoSource?.type]);
 
-  // Sync volume with videoRef
+  // Sync volume with videoRef or YouTube
   useEffect(() => {
+    if (videoSource?.type === 'youtube') {
+      try {
+        if (isMuted) {
+          ytPlayerRef.current?.mute?.();
+        } else {
+          ytPlayerRef.current?.unMute?.();
+          ytPlayerRef.current?.setVolume?.(Math.round(volume * 100));
+        }
+      } catch {
+        // ignore
+      }
+      return;
+    }
+
     if (videoRef.current) {
       videoRef.current.volume = isMuted ? 0 : volume;
     }
-  }, [volume, isMuted]);
+  }, [volume, isMuted, videoSource?.type]);
 
-  // Time updates from video element
+  // Time updates from native HTML5 video element
   const handleTimeUpdate = () => {
     if (!videoRef.current) return;
     const timeMs = Math.floor(videoRef.current.currentTime * 1000);
-    // Only update if difference > 30ms to prevent jitter
     if (Math.abs(currentTime - timeMs) > 30) {
       setCurrentTime(timeMs);
     }
@@ -96,16 +285,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
     if (!videoRef.current) return;
     const durMs = Math.floor(videoRef.current.duration * 1000);
     setDuration(durMs);
+    setPlaybackError(null);
   };
 
-  // Sync external seek (e.g. from timeline or table) to videoRef
-  useEffect(() => {
-    if (!videoRef.current) return;
-    const videoCurrentMs = Math.floor(videoRef.current.currentTime * 1000);
-    if (Math.abs(videoCurrentMs - currentTime) > 250) {
-      videoRef.current.currentTime = currentTime / 1000;
-    }
-  }, [currentTime]);
+  const handleVideoError = () => {
+    const errorMsg = t('notifications.failedToPlayVideo');
+    setPlaybackError(errorMsg);
+    addNotification('error', t('notifications.errorTitle'), errorMsg);
+  };
 
   // Find currently active subtitle cue for live overlay
   const activeCue = useMemo(() => {
@@ -130,6 +317,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
       const url = URL.createObjectURL(file);
+      setPlaybackError(null);
       setVideoSource({
         type: 'local',
         url,
@@ -139,16 +327,45 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
     }
   };
 
-  const handleDirectUrlSubmit = (e: React.FormEvent) => {
+  const handleDirectUrlSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!urlInput.trim()) return;
-    setVideoSource({
-      type: 'url',
-      url: urlInput.trim(),
-      name: urlInput.trim().split('/').pop() || 'Remote Stream',
-    });
-    setShowUrlDialog(false);
-    setUrlInput('');
+    const rawUrl = urlInput.trim();
+    if (!rawUrl) return;
+
+    setIsLoadingUrl(true);
+    setPlaybackError(null);
+
+    try {
+      const ytId = extractYouTubeVideoId(rawUrl);
+      if (ytId) {
+        // YouTube URL detected
+        const meta = await fetchYouTubeMetadata(ytId);
+        setVideoSource({
+          type: 'youtube',
+          url: rawUrl,
+          youtubeId: ytId,
+          name: meta.title,
+          thumbnail: meta.thumbnail,
+        });
+        addNotification('success', t('notifications.youtubeLoaded'), meta.title);
+      } else {
+        // Direct media stream URL
+        const parsedName = rawUrl.split('/').pop()?.split('?')[0] || 'Remote Stream';
+        setVideoSource({
+          type: 'url',
+          url: rawUrl,
+          name: parsedName,
+        });
+        addNotification('info', t('notifications.videoLoaded'), parsedName);
+      }
+      setShowUrlDialog(false);
+      setUrlInput('');
+    } catch (err) {
+      console.error('Error submitting URL:', err);
+      addNotification('error', t('notifications.errorTitle'), t('notifications.failedToPlayVideo'));
+    } finally {
+      setIsLoadingUrl(false);
+    }
   };
 
   const toggleFullscreen = () => {
@@ -173,15 +390,42 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
       {/* Video Canvas / Display Area */}
       <div className="relative flex-1 min-h-0 flex items-center justify-center bg-black overflow-hidden group">
         {videoSource ? (
-          <video
-            ref={videoRef}
-            src={videoSource.url}
-            onTimeUpdate={handleTimeUpdate}
-            onLoadedMetadata={handleLoadedMetadata}
-            onClick={togglePlay}
-            className="w-full h-full object-contain cursor-pointer"
-            playsInline
-          />
+          videoSource.type === 'youtube' ? (
+            <div className="w-full h-full relative flex items-center justify-center bg-black">
+              <div id="subsync-yt-player" className="w-full h-full" />
+              {playbackError && (
+                <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-6 text-center text-rose-400 z-10">
+                  <AlertCircle className="w-10 h-10 mb-3 text-rose-500" />
+                  <p className="text-sm font-semibold mb-2">{playbackError}</p>
+                  <p className="text-xs text-slate-400 max-w-sm">
+                    {t('notifications.failedToLoadYoutube')}
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="w-full h-full relative flex items-center justify-center">
+              <video
+                ref={videoRef}
+                src={videoSource.url}
+                onTimeUpdate={handleTimeUpdate}
+                onLoadedMetadata={handleLoadedMetadata}
+                onError={handleVideoError}
+                onClick={togglePlay}
+                className="w-full h-full object-contain cursor-pointer"
+                playsInline
+              />
+              {playbackError && (
+                <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-6 text-center text-rose-400 z-10">
+                  <AlertCircle className="w-10 h-10 mb-3 text-rose-500" />
+                  <p className="text-sm font-semibold mb-2">{playbackError}</p>
+                  <p className="text-xs text-slate-400 max-w-sm">
+                    {t('player.noVideoDesc')}
+                  </p>
+                </div>
+              )}
+            </div>
+          )
         ) : (
           <div className="flex flex-col items-center justify-center p-8 text-center text-slate-400">
             <div className="w-16 h-16 rounded-2xl bg-brand-indigo/60 border border-brand-indigo-600/40 flex items-center justify-center mb-4 text-brand-apricot shadow-inner">
@@ -215,7 +459,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
         {/* Live Subtitle Overlay */}
         {activeCue && (
           <div
-            className={`absolute left-0 right-0 px-6 flex justify-center pointer-events-none transition-all duration-100 ${
+            className={`absolute left-0 right-0 px-6 flex justify-center pointer-events-none transition-all duration-100 z-20 ${
               subtitlePreferences.position === 'top' ? 'top-6' : 'bottom-12'
             }`}
           >
@@ -235,11 +479,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
           </div>
         )}
 
-        {/* Large Play Indicator on Hover when Paused */}
-        {videoSource && !isPlaying && (
+        {/* Large Play Indicator on Hover when Paused for Local/Direct Media */}
+        {videoSource && !isPlaying && videoSource.type !== 'youtube' && !playbackError && (
           <button
             onClick={togglePlay}
-            className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/20 transition"
+            className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/20 transition z-10"
           >
             <div className="w-14 h-14 rounded-full bg-brand-teal/90 text-white flex items-center justify-center shadow-lg hover:scale-110 transition">
               <Play className="w-7 h-7 ml-0.5" />
@@ -248,9 +492,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
         )}
       </div>
 
-      {/* Direct URL Input Modal */}
+      {/* Direct URL or YouTube Input Modal */}
       {showUrlDialog && (
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-20 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-30 flex items-center justify-center p-4">
           <form
             onSubmit={handleDirectUrlSubmit}
             className="w-full max-w-md bg-brand-indigo-900 border border-brand-indigo-700 rounded-xl p-5 shadow-2xl text-slate-100"
@@ -265,24 +509,28 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ onOpenVideoFile }) => 
             <input
               type="url"
               required
+              disabled={isLoadingUrl}
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
               placeholder={t('player.directUrlPlaceholder')}
-              className="w-full bg-slate-950 border border-brand-indigo-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-teal mb-4"
+              className="w-full bg-slate-950 border border-brand-indigo-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-brand-teal mb-4 disabled:opacity-50"
             />
             <div className="flex justify-end gap-2">
               <button
                 type="button"
+                disabled={isLoadingUrl}
                 onClick={() => setShowUrlDialog(false)}
-                className="px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                className="px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-slate-800 transition disabled:opacity-50"
               >
                 {t('common.cancel')}
               </button>
               <button
                 type="submit"
-                className="px-4 py-1.5 rounded-lg text-xs bg-brand-teal hover:bg-brand-teal-600 text-white font-medium transition"
+                disabled={isLoadingUrl}
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs bg-brand-teal hover:bg-brand-teal-600 text-white font-medium transition disabled:opacity-50"
               >
-                {t('player.loadVideo')}
+                {isLoadingUrl && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>{isLoadingUrl ? t('player.loadingVideo') : t('player.loadVideo')}</span>
               </button>
             </div>
           </form>

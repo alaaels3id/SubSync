@@ -35,10 +35,11 @@
     "noVideoTitle": "لم يتم تحميل أي فيديو",
     "noVideoDesc": "اسحب وأفلت ملف فيديو هنا، أو اختر ملفاً من جهازك أو استخدم رابطاً مباشراً.",
     "chooseLocal": "اختيار ملف محلي",
-    "directUrl": "رابط وسائط مباشر",
-    "directUrlTitle": "تشغيل من رابط وسائط مباشر",
-    "directUrlDesc": "أدخل رابطاً مباشراً لملف فيديو (MP4, WebM, HLS). لا تدعم صفحات YouTube أو مواقع البث المحمية.",
-    "directUrlPlaceholder": "https://example.com/video.mp4",
+    "directUrl": "رابط مباشر أو YouTube",
+    "directUrlTitle": "تشغيل من رابط مباشر أو YouTube",
+    "directUrlDesc": "أدخل رابط فيديو مباشر (MP4, WebM) أو رابط فيديو من YouTube.",
+    "directUrlPlaceholder": "https://www.youtube.com/watch?v=... أو رابط MP4 مباشر",
+    "loadingVideo": "جاري التحميل...",
     "loadVideo": "تشغيل",
     "play": "تشغيل (Space)",
     "pause": "إيقاف مؤقت (Space)",
@@ -158,9 +159,12 @@
     "welcomeTitle": "مرحبًا بك في SubSync Studio",
     "welcomeMessage": "تم تجهيز مساحة العمل بنجاح. يمكنك استيراد فيديو أو البدء بمشروع جديد.",
     "videoLoaded": "تم فتح الفيديو بنجاح",
+    "youtubeLoaded": "تم تحميل فيديو YouTube بنجاح",
     "srtImported": "تم استيراد الترجمة بنجاح",
     "errorTitle": "خطأ",
     "failedToOpenVideo": "فشل فتح ملف الفيديو",
+    "failedToLoadYoutube": "فشل تحميل فيديو YouTube، تأكد من صحة الرابط أو إمكانية تضمين الفيديو",
+    "failedToPlayVideo": "تعذر تشغيل الفيديو. تأكد من أن الرابط مباشر وصالح",
     "failedToImportSrt": "فشل استيراد ملف الترجمة"
   }
 }
